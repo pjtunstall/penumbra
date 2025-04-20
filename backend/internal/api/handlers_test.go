@@ -1,5 +1,7 @@
 package api
 
+// todo: This test file uses testify. Elsewhere, e.g. router_test, testify is not used. Decide on a consistent system. Less dependencies is good, but testify might make the code clearer due to its more declarative style.
+
 import (
 	"bytes"
 	"dts/backend/internal/app"

@@ -22,7 +22,7 @@ type SQLiteStore struct {
 var _ Store = &SQLiteStore{}
 
 func NewSQLiteStore(path string) *SQLiteStore {
-    db, err := sql.Open("sqlite", path+"?_busy_timeout=5000&_journal_mode=WAL")
+    db, err := sql.Open("sqlite", path+"?_busy_timeout=5000&_journal_mode=WAL") // todo: Check if this timeout actually works.
     if err != nil {
         log.Fatal(err)
     }
