@@ -16,10 +16,10 @@ type TaskHandler interface {
 }
 
 type Handler struct {
-    store *db.SQLiteStore
+    store db.Store
 }
 
-func NewHandler(store *db.SQLiteStore) *Handler {
+func NewHandler(store db.Store) *Handler {
     return &Handler{store: store}
 }
 

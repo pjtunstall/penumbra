@@ -9,9 +9,17 @@ import (
 	_ "modernc.org/sqlite"
 )
 
+type Store interface {
+    CreateTask(task app.Task) (int, error)
+    GetTask(id int) (app.Task, error)
+}
+
 type SQLiteStore struct {
     db *sql.DB
 }
+
+// Ensure SQLiteStore implements the Store interface
+var _ Store = &SQLiteStore{}
 
 func NewSQLiteStore(path string) *SQLiteStore {
     db, err := sql.Open("sqlite", path+"?_busy_timeout=5000&_journal_mode=WAL")
