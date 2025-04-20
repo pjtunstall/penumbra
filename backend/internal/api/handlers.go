@@ -1,16 +1,23 @@
 package api
 
 import (
+	"embed"
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"text/template"
 	"time"
 
 	"dts/backend/internal/app"
 	"dts/backend/internal/db"
 )
 
+//go:embed templates/*
+var tmplFS embed.FS
+var templates = template.Must(template.ParseFS(tmplFS, "templates/*.html"))
+
 type TaskHandler interface {
+    RenderHome(http.ResponseWriter, *http.Request)
     CreateTask(http.ResponseWriter, *http.Request)
     GetTask(http.ResponseWriter, *http.Request, string)
 }
@@ -22,6 +29,14 @@ type Handler struct {
 func NewHandler(store db.Store) *Handler {
     return &Handler{store: store}
 }
+
+func (h *Handler) RenderHome(w http.ResponseWriter, r *http.Request) {
+    err := templates.ExecuteTemplate(w, "index.html", nil)
+    if err != nil {
+        http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+    }
+}
+
 
 func (h *Handler) CreateTask(w http.ResponseWriter, r *http.Request) {
     var input app.Task

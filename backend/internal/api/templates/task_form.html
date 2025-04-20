@@ -1,0 +1,12 @@
+{{define "content"}}
+<h2>Create New Task</h2>
+<form action="/tasks" method="POST">
+  <label for="title">Title:</label>
+  <input type="text" id="title" name="title" required />
+  <label for="status">Status:</label>
+  <input type="text" id="status" name="status" required />
+  <label for="due_date">Due Date:</label>
+  <input type="datetime-local" id="due_date" name="due_date" required />
+  <button type="submit">Create Task</button>
+</form>
+{{end}}

@@ -9,9 +9,16 @@ import (
 )
 
 type mockHandler struct {
+	homeCalled bool
 	createCalled bool
 	getCalled    bool
 	gotID        string
+}
+
+// todo: Test this too.
+func (m *mockHandler) RenderHome(w http.ResponseWriter, r *http.Request) {
+	m.homeCalled = true
+	w.WriteHeader(http.StatusOK)
 }
 
 func (m *mockHandler) CreateTask(w http.ResponseWriter, r *http.Request) {

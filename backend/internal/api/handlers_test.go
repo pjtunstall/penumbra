@@ -30,7 +30,7 @@ func (m *MockSQLiteStore) GetTask(id int) (app.Task, error) {
 }
 
 func TestCreateTask(t *testing.T) {
-    mockStore := new(MockSQLiteStore)
+    mockStore := &MockSQLiteStore{}
     handler := NewHandler(mockStore)
 
     fixedTime := time.Date(2025, 4, 21, 10, 0, 0, 0, time.UTC)
@@ -56,7 +56,7 @@ func TestCreateTask(t *testing.T) {
 }
 
 func TestGetTask(t *testing.T) {
-    mockStore := new(MockSQLiteStore)
+    mockStore := &MockSQLiteStore{}
     handler := NewHandler(mockStore)
 
 	fixedTime := time.Date(2025, 4, 21, 10, 0, 0, 0, time.UTC)

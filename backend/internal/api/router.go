@@ -8,6 +8,14 @@ import (
 func NewRouter(h TaskHandler) http.Handler {
     mux := http.NewServeMux()
 
+    mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+        if r.Method == http.MethodGet {
+            h.RenderHome(w, r)
+        } else {
+            http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+        }
+    })
+
     mux.HandleFunc("/tasks", func(w http.ResponseWriter, r *http.Request) {
         if r.Method == http.MethodPost {
             h.CreateTask(w, r)
