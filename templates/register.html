@@ -1,9 +1,17 @@
-{{define "register"}}
+{{define "hero"}}
 <div class="hero bg-base-200 min-h-screen">
   <div class="hero-content flex-col lg:flex-row-reverse">
     <div class="text-center lg:text-left">
       <h1 class="text-5xl font-bold">PENUMBRA</h1>
-      <p class="py-6">Create your account below to get started.</p>
+      <p class="py-6">
+        Enter your details to sign up. We respect your privacy. By signing up,
+        you agree to our Terms of Service and Privacy Policy. Your information
+        is used to provide you with a personalized experience and to improve our
+        services. We and our thousand partners use cookies and other tracking
+        technologies to collect information about your use of our services. By
+        continuing to use our services, you consent to the use of this
+        information.
+      </p>
     </div>
     <div class="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
       <div class="card-body">
@@ -32,4 +40,4 @@
     </div>
   </div>
 </div>
-{{end}}
+{{end}} {{template "layout" .}}

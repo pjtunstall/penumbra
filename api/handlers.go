@@ -39,13 +39,19 @@ func (h *RealHandler) RenderHome(w http.ResponseWriter, r *http.Request) {
 
     log.Println(data.Flag)
 
-    err := h.templates.ExecuteTemplate(w, "index.html", data)
+    err := h.templates.ExecuteTemplate(w, "home.html", data)
     if err != nil {
         http.Error(w, "Internal Server Error: "+err.Error(), http.StatusInternalServerError)
     }
 }
 
-
+func (h *RealHandler) Register(w http.ResponseWriter, r *http.Request) {
+    w.WriteHeader(http.StatusOK)
+    err := h.templates.ExecuteTemplate(w, "register.html", nil)
+    if err != nil {
+        http.Error(w, "Internal Server Error: "+err.Error(), http.StatusInternalServerError)
+    }
+}
 
 func (h *RealHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
     var input app.Task
