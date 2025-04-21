@@ -5,11 +5,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"dts/backend/internal/api"
+	"dts/api"
 )
 
 type mockHandler struct {
 	homeCalled bool
+	registerCalled bool
 	createCalled bool
 	getCalled    bool
 	gotID        string
@@ -18,6 +19,11 @@ type mockHandler struct {
 // todo: Test this too.
 func (m *mockHandler) RenderHome(w http.ResponseWriter, r *http.Request) {
 	m.homeCalled = true
+	w.WriteHeader(http.StatusOK)
+}
+
+func (m *mockHandler) Register(w http.ResponseWriter, r *http.Request) {
+	m.registerCalled = true
 	w.WriteHeader(http.StatusOK)
 }
 

@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"log"
 
-	"dts/backend/internal/app"
+	"dts/app"
 
 	_ "modernc.org/sqlite"
 )

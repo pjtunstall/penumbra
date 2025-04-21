@@ -4,8 +4,9 @@ package api
 
 import (
 	"bytes"
-	"dts/backend/internal/app"
+	"dts/app"
 	"encoding/json"
+	"html/template"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -31,7 +32,8 @@ func (m *MockSQLiteStore) GetTask(id int) (app.Task, error) {
 
 func TestCreateTask(t *testing.T) {
     mockStore := &MockSQLiteStore{}
-    handler := NewHandler(mockStore)
+    var templates *template.Template
+    handler := NewHandler(mockStore, templates)
 
     fixedTime := time.Date(2025, 4, 21, 10, 0, 0, 0, time.UTC)
 	task := app.Task{
@@ -57,7 +59,8 @@ func TestCreateTask(t *testing.T) {
 
 func TestGetTask(t *testing.T) {
     mockStore := &MockSQLiteStore{}
-    handler := NewHandler(mockStore)
+    var templates *template.Template
+    handler := NewHandler(mockStore, templates)
 
 	fixedTime := time.Date(2025, 4, 21, 10, 0, 0, 0, time.UTC)
     task := app.Task{

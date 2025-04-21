@@ -1,16 +1,22 @@
 package main
 
 import (
+	"embed"
+	"html/template"
 	"log"
 	"net/http"
 
-	"dts/backend/internal/api"
-	"dts/backend/internal/db"
+	"dts/api"
+	"dts/db"
 )
+
+//go:embed templates/*
+var tmplFS embed.FS
+var templates = template.Must(template.ParseFS(tmplFS, "templates/*.html"))
 
 func main() {
     store := db.NewSQLiteStore("data/dev.db")
-    handler := api.NewHandler(store)
+    handler := api.NewHandler(store, templates)
     router := api.NewRouter(handler)
 
     log.Println("Server running on :8080")

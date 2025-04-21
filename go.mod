@@ -1,9 +1,11 @@
-module dts/backend
+module dts
 
 go 1.24.0
 
-require modernc.org/sqlite v1.37.0
-require github.com/stretchr/testify v1.10.0
+require (
+	github.com/stretchr/testify v1.10.0
+	modernc.org/sqlite v1.37.0
+)
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect

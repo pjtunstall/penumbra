@@ -1,20 +1,17 @@
 package api
 
 import (
-	"embed"
 	"encoding/json"
+	"html/template"
+	"log"
+	"math/rand"
 	"net/http"
 	"strconv"
-	"text/template"
 	"time"
 
-	"dts/backend/internal/app"
-	"dts/backend/internal/db"
+	"dts/app"
+	"dts/db"
 )
-
-//go:embed templates/*
-var tmplFS embed.FS
-var templates = template.Must(template.ParseFS(tmplFS, "templates/*.html"))
 
 type Handler interface {
     RenderHome(http.ResponseWriter, *http.Request)
@@ -24,18 +21,30 @@ type Handler interface {
 
 type RealHandler struct {
     store db.Store
+    templates *template.Template
 }
 
-func NewHandler(store db.Store) *RealHandler {
-    return &RealHandler{store: store}
+func NewHandler(store db.Store, templates *template.Template) *RealHandler {
+    return &RealHandler{store: store, templates: templates}
 }
 
 func (h *RealHandler) RenderHome(w http.ResponseWriter, r *http.Request) {
-    err := templates.ExecuteTemplate(w, "index.html", nil)
+    rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
+    flag := rnd.Intn(2)
+    data := struct {
+        Flag int
+    }{
+        Flag: flag,
+    }
+
+    log.Println(data.Flag)
+
+    err := h.templates.ExecuteTemplate(w, "index.html", data)
     if err != nil {
-        http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+        http.Error(w, "Internal Server Error: "+err.Error(), http.StatusInternalServerError)
     }
 }
+
 
 
 func (h *RealHandler) CreateTask(w http.ResponseWriter, r *http.Request) {

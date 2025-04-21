@@ -1,0 +1,35 @@
+{{define "register"}}
+<div class="hero bg-base-200 min-h-screen">
+  <div class="hero-content flex-col lg:flex-row-reverse">
+    <div class="text-center lg:text-left">
+      <h1 class="text-5xl font-bold">PENUMBRA</h1>
+      <p class="py-6">Create your account below to get started.</p>
+    </div>
+    <div class="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
+      <div class="card-body">
+        <form action="/register" method="POST">
+          <label class="label">Email</label>
+          <input
+            name="email"
+            type="email"
+            class="input"
+            placeholder="Email"
+            required
+          />
+          <label class="label">Password</label>
+          <input
+            name="password"
+            type="password"
+            class="input"
+            placeholder="Password"
+            required
+          />
+          <button type="submit" class="btn btn-primary mt-4">
+            Create Account
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}

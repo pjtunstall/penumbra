@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"dts/backend/internal/app"
+	"dts/app"
 )
 
 func TestSQLiteStore_CreateAndGetTask(t *testing.T) {
