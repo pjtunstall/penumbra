@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func NewRouter(h TaskHandler) http.Handler {
+func NewRouter(h Handler) http.Handler {
     mux := http.NewServeMux()
 
     mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

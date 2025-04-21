@@ -23,25 +23,6 @@
   </head>
 
   <body class="min-h-screen bg-base-200 text-base-content">
-    <header class="navbar bg-base-300 shadow-md" align="center">
-      <div class="flex-1">
-        <a href="/" class="btn btn-ghost text-xl">PENUMBRA</a>
-      </div>
-    </header>
-
-    <header class="navbar bg-base-100 shadow-md" align="right">
-      <div class="flex-none gap-2">
-        <a href="/tasks" class="btn btn-outline btn-sm">View Tasks</a>
-        <a href="/tasks/new" class="btn btn-primary btn-sm">Create Task</a>
-      </div>
-    </header>
-
-    <main class="p-4 max-w-4xl mx-auto">{{block "content" .}} {{end}}</main>
-
-    <footer
-      class="footer footer-center p-4 bg-base-100 text-base-content border-t"
-    >
-      <p>&copy; 2025 The Management</p>
-    </footer>
+    {{block "sign" .}} {{end}}
   </body>
 </html>
