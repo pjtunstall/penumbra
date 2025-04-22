@@ -7,7 +7,7 @@ type User struct {
     Name string
     Phone string
     Email string
-    PasswordHash string
+    PasswordHash []byte
 }
 
 type Task struct {

@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"time"
 
+	"golang.org/x/crypto/bcrypt"
+
 	"dts/app"
 	"dts/db"
 )
@@ -66,9 +68,17 @@ func (h *RealHandler) SubmitRegister(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+    // todo: prevent passwords larget than 72 bytes, bycrypt's limit
+    // todo: 
+    password_hash, err := bcrypt.GenerateFromPassword([]byte(r.FormValue("password")), 10)
+    if err != nil {
+        http.Error(w, "Internal Server Error: "+err.Error(), http.StatusInternalServerError)
+        return
+    }
+
     user := app.User{
         Name: r.FormValue("name"),
-        PasswordHash: r.FormValue("password"),
+        PasswordHash: password_hash,
         Email: r.FormValue("email"),
         Phone: r.FormValue("phone"),
     }
