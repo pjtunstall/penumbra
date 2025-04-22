@@ -1,0 +1,47 @@
+{{define "sign-up-card"}}
+<div class="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
+  <div class="card-body">
+    <form action="/register" method="POST">
+      <label class="label">Name</label>
+      <input
+        name="name"
+        type="text"
+        class="input"
+        placeholder="Jane Doe"
+        required
+        autocomplete="off"
+      />
+
+      <label class="label">Phone</label>
+      <input
+        name="phone"
+        type="text"
+        class="input"
+        placeholder="55555555555"
+        required
+        autocomplete="off"
+      />
+
+      <label class="label">Email</label>
+      <input
+        name="email"
+        type="email"
+        class="input"
+        placeholder="jdoe@email.com"
+        required
+        autocomplete="off"
+      />
+      <label class="label">Password</label>
+      <input
+        name="password"
+        type="password"
+        class="input"
+        placeholder="beans"
+        required
+        autocomplete="new-password"
+      />
+      <button type="submit" class="btn btn-neutral mt-4">Create Account</button>
+    </form>
+  </div>
+</div>
+{{end}}
