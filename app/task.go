@@ -2,6 +2,14 @@ package app
 
 import "time"
 
+type User struct {
+    ID   int
+    Name string
+    Phone string
+    Email string
+    PasswordHash string
+}
+
 type Task struct {
     ID          int       `json:"id"`
     Title       string    `json:"title"`

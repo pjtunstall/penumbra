@@ -9,8 +9,6 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-
-	"dts/db"
 )
 
 func main() {
@@ -20,6 +18,10 @@ func main() {
     }
 
     dbFile := getDBPath(exePath)
+
+    if err := resetDB(dbFile); err != nil {
+        log.Fatalf("resetting database: %v", err)
+    }
 
     migrations := "file://" + filepath.Join(filepath.Dir(exePath), "migrations")
 
@@ -49,18 +51,9 @@ func getDBPath(exePath string) string {
     return filepath.Join(dataDir, "dev.db")
 }
 
-func ApplyMigrations(store *db.SQLiteStore) error {
-    migrationsPath := "file://" + filepath.Join("migrations")
-
-    m, err := migrate.New(migrationsPath, "sqlite3://"+store.Path)
-    if err != nil {
+func resetDB(path string) error {
+    if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
         return err
     }
-
-    if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-        return err
-    }
-
-    log.Println("Migrations applied successfully.")
     return nil
 }

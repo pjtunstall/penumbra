@@ -14,7 +14,8 @@ import (
 
 type Handler interface {
     RenderHome(http.ResponseWriter, *http.Request)
-    Register(http.ResponseWriter, *http.Request)
+    RenderRegister(http.ResponseWriter, *http.Request)
+    SubmitRegister(http.ResponseWriter, *http.Request)
     CreateTask(http.ResponseWriter, *http.Request)
     GetTask(http.ResponseWriter, *http.Request, string)
 }
@@ -45,7 +46,7 @@ func (h *RealHandler) RenderHome(w http.ResponseWriter, r *http.Request) {
     }
 }
 
-func (h *RealHandler) Register(w http.ResponseWriter, r *http.Request) {
+func (h *RealHandler) RenderRegister(w http.ResponseWriter, r *http.Request) {
     data := struct {
         Page string
     }{
@@ -56,6 +57,28 @@ func (h *RealHandler) Register(w http.ResponseWriter, r *http.Request) {
     if err != nil {
         http.Error(w, "Internal Server Error: "+err.Error(), http.StatusInternalServerError)
     }
+}
+
+func (h *RealHandler) SubmitRegister(w http.ResponseWriter, r *http.Request) {
+    err := r.ParseForm()
+    if err != nil {
+        http.Error(w, "Bad Request", http.StatusBadRequest)
+        return
+    }
+
+    user := app.User{
+        Name: r.FormValue("name"),
+        PasswordHash: r.FormValue("password"),
+        Email: r.FormValue("email"),
+        Phone: r.FormValue("phone"),
+    }
+
+    if err := h.store.CreateUser(user); err != nil {
+        http.Error(w, "Internal Server Error: "+err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
 
 func (h *RealHandler) CreateTask(w http.ResponseWriter, r *http.Request) {

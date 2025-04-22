@@ -20,6 +20,11 @@ type MockSQLiteStore struct {
     mock.Mock
 }
 
+func (m *MockSQLiteStore) CreateUser(user app.User) error {
+    args := m.Called(user)
+    return args.Error(0)
+}
+
 func (m *MockSQLiteStore) CreateTask(task app.Task) (int, error) {
     args := m.Called(task)
     return args.Int(0), args.Error(1)

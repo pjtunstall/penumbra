@@ -10,7 +10,8 @@ import (
 
 type mockHandler struct {
 	homeCalled bool
-	registerCalled bool
+	renderRegisterCalled bool
+	submitRegisterCalled bool
 	createCalled bool
 	getCalled    bool
 	gotID        string
@@ -22,8 +23,13 @@ func (m *mockHandler) RenderHome(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (m *mockHandler) Register(w http.ResponseWriter, r *http.Request) {
-	m.registerCalled = true
+func (m *mockHandler) RenderRegister(w http.ResponseWriter, r *http.Request) {
+	m.renderRegisterCalled = true
+	w.WriteHeader(http.StatusOK)
+}
+
+func (m *mockHandler)SubmitRegister(w http.ResponseWriter, r *http.Request) {
+	m.submitRegisterCalled = true
 	w.WriteHeader(http.StatusOK)
 }
 
