@@ -16,6 +16,14 @@ func NewRouter(h Handler) http.Handler {
         }
     })
 
+    mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+        if r.Method == http.MethodPost {
+            h.SubmitLogin(w, r)
+        } else {
+            http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+        }
+    })
+
     mux.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
         if r.Method == http.MethodGet {
             h.RenderRegister(w, r)

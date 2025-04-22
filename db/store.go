@@ -13,6 +13,7 @@ type Store interface {
     CreateUser(user app.User) error
     CreateTask(task app.Task) (int, error)
     GetTask(id int) (app.Task, error)
+    GetUserByEmail(email string) (app.User, error)
 }
 
 type SQLiteStore struct {
@@ -48,6 +49,13 @@ func (s *SQLiteStore) CreateUser(user app.User) error {
     _, err := s.db.Exec(`INSERT INTO users (name, password_hash, email, phone) VALUES (?, ?, ?, ?)`,
         user.Name, user.PasswordHash, user.Email, user.Phone)
     return err
+}
+
+func (s *SQLiteStore) GetUserByEmail(email string) (app.User, error) {
+    var user app.User
+    err := s.db.QueryRow(`SELECT id, name, password_hash, email, phone FROM users WHERE email = ?`, email).
+        Scan(&user.ID, &user.Name, &user.PasswordHash, &user.Email, &user.Phone)
+    return user, err
 }
 
 func (s *SQLiteStore) CreateTask(t app.Task) (int, error) {

@@ -12,8 +12,9 @@ type mockHandler struct {
 	homeCalled bool
 	renderRegisterCalled bool
 	submitRegisterCalled bool
+	submitLoginCalled bool
 	createCalled bool
-	getCalled    bool
+	getTaskCalled    bool
 	gotID        string
 }
 
@@ -33,13 +34,18 @@ func (m *mockHandler)SubmitRegister(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+func (m *mockHandler) SubmitLogin(w http.ResponseWriter, r *http.Request) {
+	m.submitLoginCalled = true
+	w.WriteHeader(http.StatusOK)
+}
+
 func (m *mockHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 	m.createCalled = true
 	w.WriteHeader(http.StatusCreated)
 }
 
 func (m *mockHandler) GetTask(w http.ResponseWriter, r *http.Request, id string) {
-	m.getCalled = true
+	m.getTaskCalled = true
 	m.gotID = id
 	w.WriteHeader(http.StatusOK)
 }
@@ -68,7 +74,7 @@ func TestNewRouter(t *testing.T) {
 
 		router.ServeHTTP(rec, req)
 
-		if !mock.getCalled {
+		if !mock.getTaskCalled {
 			t.Errorf("GetTask was not called")
 		}
 		if mock.gotID != "123" {

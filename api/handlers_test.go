@@ -25,6 +25,11 @@ func (m *MockSQLiteStore) CreateUser(user app.User) error {
     return args.Error(0)
 }
 
+func (m *MockSQLiteStore) GetUserByEmail(email string) (app.User, error) {
+    args := m.Called(email)
+    return args.Get(0).(app.User), args.Error(1)
+}
+
 func (m *MockSQLiteStore) CreateTask(task app.Task) (int, error) {
     args := m.Called(task)
     return args.Int(0), args.Error(1)

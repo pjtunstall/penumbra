@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"html/template"
+	"log"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -18,6 +19,7 @@ type Handler interface {
     RenderHome(http.ResponseWriter, *http.Request)
     RenderRegister(http.ResponseWriter, *http.Request)
     SubmitRegister(http.ResponseWriter, *http.Request)
+    SubmitLogin(http.ResponseWriter, *http.Request)
     CreateTask(http.ResponseWriter, *http.Request)
     GetTask(http.ResponseWriter, *http.Request, string)
 }
@@ -46,6 +48,31 @@ func (h *RealHandler) RenderHome(w http.ResponseWriter, r *http.Request) {
     if err != nil {
         http.Error(w, "Internal Server Error: "+err.Error(), http.StatusInternalServerError)
     }
+}
+
+func (h *RealHandler) SubmitLogin(w http.ResponseWriter, r *http.Request) {
+    err := r.ParseForm()
+    if err != nil {
+        http.Error(w, "Bad Request", http.StatusBadRequest)
+        log.Println("Error parsing form: ", err)
+        return
+    }
+
+    user, err := h.store.GetUserByEmail(r.FormValue("email"))
+    if err != nil {
+        http.Error(w, "Bad Request", http.StatusBadRequest)
+        log.Println("Error getting user: ", err)
+        return
+    }
+
+    if err := bcrypt.CompareHashAndPassword(user.PasswordHash, []byte(r.FormValue("password"))); err != nil {
+        http.Error(w, "Bad Request", http.StatusBadRequest)
+        log.Println("Error comparing passwords: ", err)
+        return
+    }
+
+    w.WriteHeader(http.StatusOK)
+    log.Println("User " + user.Name + " logged in")
 }
 
 func (h *RealHandler) RenderRegister(w http.ResponseWriter, r *http.Request) {
