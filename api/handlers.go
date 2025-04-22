@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"html/template"
-	"log"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -15,6 +14,7 @@ import (
 
 type Handler interface {
     RenderHome(http.ResponseWriter, *http.Request)
+    Register(http.ResponseWriter, *http.Request)
     CreateTask(http.ResponseWriter, *http.Request)
     GetTask(http.ResponseWriter, *http.Request, string)
 }
@@ -33,21 +33,26 @@ func (h *RealHandler) RenderHome(w http.ResponseWriter, r *http.Request) {
     flag := rnd.Intn(2)
     data := struct {
         Flag int
+        Page string
     }{
         Flag: flag,
+        Page: "home",
     }
 
-    log.Println(data.Flag)
-
-    err := h.templates.ExecuteTemplate(w, "home.html", data)
+    err := h.templates.ExecuteTemplate(w, "layout", data)
     if err != nil {
         http.Error(w, "Internal Server Error: "+err.Error(), http.StatusInternalServerError)
     }
 }
 
 func (h *RealHandler) Register(w http.ResponseWriter, r *http.Request) {
-    w.WriteHeader(http.StatusOK)
-    err := h.templates.ExecuteTemplate(w, "register.html", nil)
+    data := struct {
+        Page string
+    }{
+        Page: "register",
+    }
+
+    err := h.templates.ExecuteTemplate(w, "layout", data)
     if err != nil {
         http.Error(w, "Internal Server Error: "+err.Error(), http.StatusInternalServerError)
     }

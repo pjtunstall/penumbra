@@ -1,38 +1,61 @@
-{{define "hero"}}
+{{define "register"}}
 <div class="hero bg-base-200 min-h-screen">
   <div class="hero-content flex-col lg:flex-row-reverse">
     <div class="text-center lg:text-left">
       <h1 class="text-5xl font-bold">PENUMBRA</h1>
       <p class="py-6">
-        Enter your details to sign up. We respect your privacy. By signing up,
-        you agree to our Terms of Service and Privacy Policy. Your information
-        is used to provide you with a personalized experience and to improve our
-        services. We and our thousand partners use cookies and other tracking
-        technologies to collect information about your use of our services. By
-        continuing to use our services, you consent to the use of this
-        information.
+        Enter your details to sign up. We respect your privacy. Nobody respects
+        your privacy more than we do. By signing up, you agree to our Terms of
+        Service and Privacy Policy. Your information is used to provide you with
+        a personalized experience and to improve our services. We and our
+        thousand partners use cookies and other tracking technologies to collect
+        information about your use of our services. By continuing to use our
+        services, you consent to the use of this information for purposes you
+        cannot even imagine.
       </p>
     </div>
     <div class="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
       <div class="card-body">
         <form action="/register" method="POST">
+          <label class="label">Name</label>
+          <input
+            name="name"
+            type="text"
+            class="input"
+            placeholder="Jane Doe"
+            required
+            autocomplete="off"
+          />
+
+          <label class="label">Phone</label>
+          <input
+            name="phone"
+            type="text"
+            class="input"
+            placeholder="55555555555"
+            required
+            autocomplete="off"
+          />
+
           <label class="label">Email</label>
           <input
             name="email"
             type="email"
             class="input"
-            placeholder="Email"
+            placeholder="jdoe@email.com"
             required
+            autocomplete="off"
           />
           <label class="label">Password</label>
           <input
             name="password"
             type="password"
             class="input"
-            placeholder="Password"
+            placeholder="beans"
             required
+            autocomplete="new-password"
           />
-          <button type="submit" class="btn btn-primary mt-4">
+          <button type="submit" class="btn btn-neutral mt-4">
             Create Account
           </button>
         </form>
@@ -40,4 +63,4 @@
     </div>
   </div>
 </div>
-{{end}} {{template "layout" .}}
+{{end}}
