@@ -6,7 +6,7 @@ import (
 
 	"dts/app"
 
-	_ "modernc.org/sqlite"
+	_ "github.com/glebarez/go-sqlite"
 )
 
 type Store interface {
@@ -16,13 +16,14 @@ type Store interface {
 
 type SQLiteStore struct {
     db *sql.DB
+    Path string
 }
 
 // Ensure SQLiteStore implements the Store interface
 var _ Store = &SQLiteStore{}
 
 func NewSQLiteStore(path string) *SQLiteStore {
-    db, err := sql.Open("sqlite", path+"?_busy_timeout=5000&_journal_mode=WAL") // todo: Check if this timeout actually works.
+    db, err := sql.Open("sqlite", path)
     if err != nil {
         log.Fatal(err)
     }
@@ -39,7 +40,7 @@ func NewSQLiteStore(path string) *SQLiteStore {
         log.Fatal(err)
     }
 
-    return &SQLiteStore{db: db}
+    return &SQLiteStore{db: db, Path: path}
 }
 
 func (s *SQLiteStore) CreateTask(t app.Task) (int, error) {
