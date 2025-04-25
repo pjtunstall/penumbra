@@ -3,6 +3,6 @@ CREATE TABLE IF NOT EXISTS tasks (
   user_id INTEGER NOT NULL,
   title TEXT NOT NULL,
   description TEXT,
-  status TEXT NOT NULL,
+  done INTEGER NULL,
   due DATETIME NOT NULL
 );

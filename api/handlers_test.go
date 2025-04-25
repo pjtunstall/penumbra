@@ -35,12 +35,12 @@ func (m *MockSQLiteStore) AddSessionToken(user_id int) (string, time.Time, error
     return args.String(0), args.Get(1).(time.Time), args.Error(2)
 }
 
-func (m *MockSQLiteStore) GetUserIDFromSessionToken(sessionToken string) (int, error) {
+func (m *MockSQLiteStore) GetUserIdFromSessionToken(sessionToken string) (int, error) {
     args := m.Called(sessionToken)
     return args.Int(0), args.Error(1)
 }
 
-func (m *MockSQLiteStore) ListTasks(user_id int) ([]app.Task, error) {
+func (m *MockSQLiteStore) GetAllTasks(user_id int) ([]app.Task, error) {
     args := m.Called(user_id)
     return args.Get(0).([]app.Task), args.Error(1)
 }
@@ -50,7 +50,7 @@ func (m *MockSQLiteStore) CreateTask(task app.Task) (int, error) {
     return args.Int(0), args.Error(1)
 }
 
-func (m *MockSQLiteStore) GetTask(id int) (app.Task, error) {
+func (m *MockSQLiteStore) GetTaskById(id int) (app.Task, error) {
     args := m.Called(id)
     return args.Get(0).(app.Task), args.Error(1)
 }
@@ -78,7 +78,7 @@ func TestCreateTask(t *testing.T) {
     var createdTask app.Task
     err := json.NewDecoder(w.Body).Decode(&createdTask)
     assert.NoError(t, err)
-    assert.Equal(t, 1, createdTask.ID)
+    assert.Equal(t, 1, createdTask.Id)
     mockStore.AssertExpectations(t)
 }
 
@@ -89,7 +89,7 @@ func TestGetTask(t *testing.T) {
 
 	fixedTime := time.Date(2025, 4, 21, 10, 0, 0, 0, time.UTC)
     task := app.Task{
-        ID:    1,
+        Id:    1,
         Title: "Test Task",
         Due:   fixedTime,
     }
@@ -105,7 +105,7 @@ func TestGetTask(t *testing.T) {
     var returnedTask app.Task
     err := json.NewDecoder(w.Body).Decode(&returnedTask)
     assert.NoError(t, err)
-    assert.Equal(t, 1, returnedTask.ID)
+    assert.Equal(t, 1, returnedTask.Id)
     assert.Equal(t, "Test Task", returnedTask.Title)
     mockStore.AssertExpectations(t)
 }

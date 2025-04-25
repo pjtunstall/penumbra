@@ -15,7 +15,7 @@ type mockHandler struct {
 	submitLoginCalled bool
 	createCalled bool
 	getTaskCalled    bool
-	gotID        string
+	gotId        string
 }
 
 // todo: Test this too.
@@ -50,7 +50,7 @@ func (m *mockHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 
 func (m *mockHandler) GetTask(w http.ResponseWriter, r *http.Request, id string) {
 	m.getTaskCalled = true
-	m.gotID = id
+	m.gotId = id
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -72,7 +72,7 @@ func TestNewRouter(t *testing.T) {
 		}
 	})
 
-	t.Run("GET /tasks/123 calls GetTask with correct ID", func(t *testing.T) {
+	t.Run("GET /tasks/123 calls GetTask with correct Id", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/tasks/123", nil)
 		rec := httptest.NewRecorder()
 
@@ -81,8 +81,8 @@ func TestNewRouter(t *testing.T) {
 		if !mock.getTaskCalled {
 			t.Errorf("GetTask was not called")
 		}
-		if mock.gotID != "123" {
-			t.Errorf("expected ID '123', got '%s'", mock.gotID)
+		if mock.gotId != "123" {
+			t.Errorf("expected Id '123', got '%s'", mock.gotId)
 		}
 		if rec.Code != http.StatusOK {
 			t.Errorf("expected status 200, got %d", rec.Code)

@@ -73,7 +73,7 @@ func (h *RealHandler) SubmitLogin(w http.ResponseWriter, r *http.Request) {
     }
 
     // Create session and store a hash of it in the database, in the users table. Set cookie. Fetch task titles, ids, and due dates. Redirect to `/dashboard`, which will display the list.
-    sessionToken, expiresAt, err := h.store.AddSessionToken(user.ID)
+    sessionToken, expiresAt, err := h.store.AddSessionToken(user.Id)
     if err != nil {
         log.Println("Error adding session: ", err)
         http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -130,7 +130,8 @@ func (h *RealHandler) SubmitRegister(w http.ResponseWriter, r *http.Request) {
     }
 
     if err := h.store.CreateUser(user); err != nil {
-        http.Error(w, "Internal Server Error: "+err.Error(), http.StatusInternalServerError)
+        log.Println("Error creating user: ", err)
+        http.Error(w, "Internal Server Error: ", http.StatusInternalServerError)
         return
     }
 
@@ -140,17 +141,19 @@ func (h *RealHandler) SubmitRegister(w http.ResponseWriter, r *http.Request) {
 func (h *RealHandler) RenderDashboard(w http.ResponseWriter, r *http.Request) {
     cookie, err := r.Cookie("session_token")
     if err != nil {
+        log.Println("Error getting cookie: ", err)
         http.Redirect(w, r, "/login", http.StatusSeeOther)
         return
     }
 
-    user_id, err := h.store.GetUserIDFromSessionToken(cookie.Value)
+    user_id, err := h.store.GetUserIdFromSessionToken(cookie.Value)
     if err != nil {
+        log.Println("Error getting user id: ", err)
         http.Redirect(w, r, "/login", http.StatusSeeOther)
         return
     }
 
-    data, err := h.store.ListTasks(user_id)
+    data, err := h.store.GetAllTasks(user_id)
     if err != nil {
         log.Println("Error getting tasks: ", err)
         http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -159,7 +162,8 @@ func (h *RealHandler) RenderDashboard(w http.ResponseWriter, r *http.Request) {
 
     err = h.templates.ExecuteTemplate(w, "dashboard", data)
     if err != nil {
-        http.Error(w, "Internal Server Error: "+err.Error(), http.StatusInternalServerError)
+        log.Println("Error executing template: ", err)
+        http.Error(w, "Internal Server Error: ", http.StatusInternalServerError)
     }
 }
 
@@ -180,7 +184,7 @@ func (h *RealHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    input.ID = id
+    input.Id = id
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(input)
 }
@@ -188,11 +192,11 @@ func (h *RealHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 func (h *RealHandler) GetTask(w http.ResponseWriter, r *http.Request, id string) {
     i, err := strconv.Atoi(id)
     if err != nil {
-        http.Error(w, "invalid ID", http.StatusBadRequest)
+        http.Error(w, "invalid Id", http.StatusBadRequest)
         return
     }
 
-    task, err := h.store.GetTask(i)
+    task, err := h.store.GetTaskById(i)
     if err != nil {
         http.Error(w, "not found", http.StatusNotFound)
         return

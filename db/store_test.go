@@ -24,7 +24,7 @@ func TestSQLiteStore_CreateAndGetTask(t *testing.T) {
 		t.Fatalf("CreateTask failed: %v", err)
 	}
 
-	got, err := store.GetTask(id)
+	got, err := store.GetTaskById(id)
 	if err != nil {
 		t.Fatalf("GetTask failed: %v", err)
 	}

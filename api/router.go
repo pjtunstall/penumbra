@@ -1,6 +1,7 @@
 package api
 
 import (
+	"log"
 	"net/http"
 	"strings"
 )
@@ -17,9 +18,13 @@ func NewRouter(h Handler) http.Handler {
     })
 
     mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-        if r.Method == http.MethodPost {
-            h.SubmitLogin(w, r)
-        } else {
+        switch r.Method {
+        case http.MethodGet:
+            // render login form
+        case http.MethodPost:
+            // authenticate, then:
+            http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+        default:
             http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
         }
     })
@@ -29,6 +34,15 @@ func NewRouter(h Handler) http.Handler {
             h.RenderRegister(w, r)
         } else if r.Method == http.MethodPost {
             h.SubmitRegister(w, r)
+        } else {
+            http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+        }
+    })
+
+    mux.HandleFunc(("/dashboard"), func(w http.ResponseWriter, r *http.Request) {
+        log.Println("Dashboard hit with method:", r.Method)
+        if r.Method == http.MethodGet {
+            h.RenderDashboard(w, r)
         } else {
             http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
         }

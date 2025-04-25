@@ -1,3 +1,7 @@
+- Untangle enpoints.
 - Redirect to `"/dashboard"` from `"/"` and `"/register"` if already logged in, i.e. if there is a valid cookie.
-- Bring tests back up to date.
 - `handlers_test.go` uses testify. Elsewhere, e.g. `router_test.go`, testify is not used. Decide on a consistent system. Less dependencies is good, but testify might make the code clearer due to its more declarative style.
+- Add more checking around task status to ensure done is converted correctly and never set to an anomalous value.
+- Sanitize all inputs and restrict their size.
+- Error messages for the user.
+- Have an error page template to gracefully display error messages that the user should see.
