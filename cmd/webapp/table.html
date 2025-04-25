@@ -1,0 +1,50 @@
+<div class="overflow-x-auto">
+  <table class="table">
+    <!-- head -->
+    <thead>
+      <tr>
+        <th>
+          <label>
+            <input type="checkbox" class="checkbox" />
+          </label>
+        </th>
+        <th>Title</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <!-- body -->
+    <tbody>
+      {{range .}}
+      <tr>
+        <th>
+          <label>
+            <input type="checkbox" class="checkbox" />
+          </label>
+        </th>
+        <td>
+          <div class="flex items-center gap-3">
+            <div>
+              <div class="font-bold">{{.Title}}</div>
+            </div>
+          </div>
+        </td>
+        <td>{{.Status}}</td>
+        <td>{{.Due}}</td>
+        <th>
+          <button class="btn btn-ghost btn-xs">description</button>
+        </th>
+      </tr>
+      {{end}}
+    </tbody>
+    <!-- foot -->
+    <tfoot>
+      <tr>
+        <th></th>
+        <th>Title</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </tfoot>
+  </table>
+</div>

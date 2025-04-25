@@ -20,6 +20,7 @@ type Handler interface {
     RenderRegister(http.ResponseWriter, *http.Request)
     SubmitRegister(http.ResponseWriter, *http.Request)
     SubmitLogin(http.ResponseWriter, *http.Request)
+    RenderDashboard(http.ResponseWriter, *http.Request)
     CreateTask(http.ResponseWriter, *http.Request)
     GetTask(http.ResponseWriter, *http.Request, string)
 }
@@ -134,6 +135,32 @@ func (h *RealHandler) SubmitRegister(w http.ResponseWriter, r *http.Request) {
     }
 
     http.Redirect(w, r, "/login", http.StatusSeeOther)
+}
+
+func (h *RealHandler) RenderDashboard(w http.ResponseWriter, r *http.Request) {
+    cookie, err := r.Cookie("session_token")
+    if err != nil {
+        http.Redirect(w, r, "/login", http.StatusSeeOther)
+        return
+    }
+
+    user_id, err := h.store.GetUserIDFromSessionToken(cookie.Value)
+    if err != nil {
+        http.Redirect(w, r, "/login", http.StatusSeeOther)
+        return
+    }
+
+    data, err := h.store.ListTasks(user_id)
+    if err != nil {
+        log.Println("Error getting tasks: ", err)
+        http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+        return
+    }
+
+    err = h.templates.ExecuteTemplate(w, "dashboard", data)
+    if err != nil {
+        http.Error(w, "Internal Server Error: "+err.Error(), http.StatusInternalServerError)
+    }
 }
 
 func (h *RealHandler) CreateTask(w http.ResponseWriter, r *http.Request) {

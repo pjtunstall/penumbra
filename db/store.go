@@ -15,9 +15,11 @@ import (
 type Store interface {
     CreateUser(user app.User) error
     AddSessionToken(user_id int) (string, time.Time, error)
+    GetUserIDFromSessionToken(sessionToken string) (int, error)
     CreateTask(task app.Task) (int, error)
     GetTask(id int) (app.Task, error)
     GetUserByEmail(email string) (app.User, error)
+    ListTasks(user_id int) ([]app.Task, error)
 }
 
 type SQLiteStore struct {
@@ -81,6 +83,22 @@ func (s *SQLiteStore) AddSessionToken(user_id int) (string, time.Time, error) {
     return sessionToken, expiresAt, err
 }
 
+func (s *SQLiteStore) GetUserIDFromSessionToken(sessionToken string) (int, error) {
+    if sessionToken == "" {
+        return 0, nil
+    }
+
+    sessionTokenHash, err := bcrypt.GenerateFromPassword([]byte(sessionToken), 10)
+    if err != nil {
+        return 0, err
+    }
+
+    var userID int
+    err = s.db.QueryRow(`SELECT user_id FROM users WHERE session_token_hash = ?`, sessionTokenHash).
+        Scan(&userID)
+    return userID, err
+}
+
 func (s *SQLiteStore) CreateTask(t app.Task) (int, error) {
     res, err := s.db.Exec(`INSERT INTO tasks (title, description, status, due) VALUES (?, ?, ?, ?)`,
         t.Title, t.Description, t.Status, t.Due)
@@ -102,5 +120,21 @@ func (s *SQLiteStore) Close() error {
 	return s.db.Close()
 }
 
+func (s *SQLiteStore) ListTasks(user_id int) ([]app.Task, error) {
+    rows, err := s.db.Query(`SELECT id, title, description, status, due FROM tasks WHERE user_id = ?`, user_id)
+    if err != nil {
+        return nil, err
+    }
+    tasks := []app.Task{}
+    for rows.Next() {
+        var t app.Task
+        err := rows.Scan(&t.ID, &t.Title, &t.Description, &t.Status, &t.Due)
+        if err != nil {
+            return nil, err
+        }
+        tasks = append(tasks, t)
+    }
+    return tasks, nil
+}
 
 // Add UpdateTask, DeleteTask, ListTasks later

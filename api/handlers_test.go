@@ -35,6 +35,16 @@ func (m *MockSQLiteStore) AddSessionToken(user_id int) (string, time.Time, error
     return args.String(0), args.Get(1).(time.Time), args.Error(2)
 }
 
+func (m *MockSQLiteStore) GetUserIDFromSessionToken(sessionToken string) (int, error) {
+    args := m.Called(sessionToken)
+    return args.Int(0), args.Error(1)
+}
+
+func (m *MockSQLiteStore) ListTasks(user_id int) ([]app.Task, error) {
+    args := m.Called(user_id)
+    return args.Get(0).([]app.Task), args.Error(1)
+}
+
 func (m *MockSQLiteStore) CreateTask(task app.Task) (int, error) {
     args := m.Called(task)
     return args.Int(0), args.Error(1)

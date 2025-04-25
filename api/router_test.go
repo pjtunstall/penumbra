@@ -39,6 +39,10 @@ func (m *mockHandler) SubmitLogin(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+func (m *mockHandler) RenderDashboard(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+}
+
 func (m *mockHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 	m.createCalled = true
 	w.WriteHeader(http.StatusCreated)
