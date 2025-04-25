@@ -9,7 +9,6 @@ import (
 
 	_ "github.com/glebarez/go-sqlite"
 	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type Store interface {
@@ -67,15 +66,15 @@ func (s *SQLiteStore) GetUserByEmail(email string) (app.User, error) {
 func (s *SQLiteStore) AddSessionToken(user_id int) (string, time.Time, error) {
     sessionToken := uuid.NewString()
     expiresAt := time.Now().Add(24 * time.Hour)
-    
-    sessionTokenHash, err := bcrypt.GenerateFromPassword([]byte(sessionToken), 10)
-    if err != nil {
-        return "", time.Time{}, err
-    }
 
-	_, err = s.db.Exec(`
-        UPDATE users SET session_token_hash = ?, session_expires_at = ? WHERE id = ?
-    `, sessionTokenHash, expiresAt, user_id)
+    log.Println("Adding session token")
+    log.Println("User id: ", user_id)
+    log.Println("Session token: ", sessionToken)
+    log.Println("Expires at: ", expiresAt)
+
+	_, err := s.db.Exec(`
+        UPDATE users SET session_token = ?, session_expires_at = ? WHERE id = ?
+    `, sessionToken, expiresAt, user_id)
     if err != nil {
         return "", time.Time{}, err
     }
@@ -88,7 +87,7 @@ func (s *SQLiteStore) GetUserIdFromSessionToken(sessionToken string) (int, error
         return 0, nil // todo: make this an error
     }
     var userId int
-    err := s.db.QueryRow(`SELECT id FROM users WHERE session_token_hash = ?`, sessionToken).
+    err := s.db.QueryRow(`SELECT id FROM users WHERE session_token = ?`, sessionToken).
         Scan(&userId)
     return userId, err
 }

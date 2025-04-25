@@ -19,12 +19,11 @@ func NewRouter(h Handler) http.Handler {
 
     mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
         switch r.Method {
-        case http.MethodGet:
-            // render login form
         case http.MethodPost:
-            // authenticate, then:
-            http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+            log.Println("Login hit with method:", r.Method)
+            h.SubmitLogin(w, r)
         default:
+            log.Println("Login hit with method:", r.Method)
             http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
         }
     })

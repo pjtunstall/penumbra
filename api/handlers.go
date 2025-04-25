@@ -80,6 +80,8 @@ func (h *RealHandler) SubmitLogin(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+    log.Println("Session token: ", sessionToken)
+
     http.SetCookie(w, &http.Cookie{
         Name:     "session_token",
         Value:    sessionToken,
@@ -145,6 +147,8 @@ func (h *RealHandler) RenderDashboard(w http.ResponseWriter, r *http.Request) {
         http.Redirect(w, r, "/login", http.StatusSeeOther)
         return
     }
+
+    log.Println("Cookie value: ", cookie.Value)
 
     user_id, err := h.store.GetUserIdFromSessionToken(cookie.Value)
     if err != nil {

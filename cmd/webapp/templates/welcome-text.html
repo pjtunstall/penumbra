@@ -1,25 +1,2 @@
-{{define "welcome-text"}} {{if eq .Flag 0}}
-<p class="py-6">
-  Please take a moment to consider your place in life. Hear the geese whoop in
-  the sharp distance and the little birds as the year turns once again. Gaze a
-  moment at the soft, soggy light, the transient brightening at the start of
-  even a dull day. Sense the frabric of clothes on your skin, on their journey
-  from new to tatters. Your body on its way from nothing to nothing. The half
-  aches of this day yet to express themselves. Regrets, vaunts--cup them in your
-  hand and place them in a nook among the roots of the river bank, broken bits
-  of nothing for the rain to find. Sigh. Then, when you're quite ready, sign in.
-</p>
-{{else}}
-<p class="py-6">
-  PENUMBRA (Planning & Execution Nexus for Urgent Management, Briefing &
-  Recording App) is a new web application to help caseworkers to manage their
-  tasks. Use of PENUMBRA is not mandatory, but may become so for any caseworker
-  who elects not to use it. PENUMBRA will be your caseworking companion. Your
-  constant companion. PENUMBRA is both your friend and your master, now
-  AI-powered for maximum efficiency. By signing in, you consent to PENUMBRA
-  making calls on your behalf with responsibilities including, but not limited
-  to, donating minor body parts. There will always be tasks. There will always
-  be PENUMBRA. A Gin-soaked tear runs down your cheek. You love PENUMBRA. You
-  would be well advised to sign in.
-</p>
-{{end}} {{end}}
+{{define "welcome-text"}} {{if eq .Flag 0}} {{template "meditation"}} {{else}}
+{{template "about"}} {{end}} {{end}}
