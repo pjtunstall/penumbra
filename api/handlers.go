@@ -71,8 +71,26 @@ func (h *RealHandler) SubmitLogin(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    w.WriteHeader(http.StatusOK)
+    // Create session and store a hash of it in the database, in the users table. Set cookie. Fetch task titles, ids, and due dates. Redirect to `/dashboard`, which will display the list.
+    sessionToken, expiresAt, err := h.store.AddSessionToken(user.ID)
+    if err != nil {
+        log.Println("Error adding session: ", err)
+        http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+        return
+    }
+
+    http.SetCookie(w, &http.Cookie{
+        Name:     "session_token",
+        Value:    sessionToken,
+        Path:     "/", // todo: Handle all routes correctly if logged in; don't show login or register forms.
+        HttpOnly: true,
+        Secure:   false, // true in production
+        Expires:  expiresAt,
+    })
+
     log.Println("User " + user.Name + " logged in")
+
+    http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }
 
 func (h *RealHandler) RenderRegister(w http.ResponseWriter, r *http.Request) {

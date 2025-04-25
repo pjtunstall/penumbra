@@ -3,14 +3,18 @@ package db
 import (
 	"database/sql"
 	"log"
+	"time"
 
 	"dts/app"
 
 	_ "github.com/glebarez/go-sqlite"
+	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Store interface {
     CreateUser(user app.User) error
+    AddSessionToken(user_id int) (string, time.Time, error)
     CreateTask(task app.Task) (int, error)
     GetTask(id int) (app.Task, error)
     GetUserByEmail(email string) (app.User, error)
@@ -56,6 +60,25 @@ func (s *SQLiteStore) GetUserByEmail(email string) (app.User, error) {
     err := s.db.QueryRow(`SELECT id, name, password_hash, email, phone FROM users WHERE email = ?`, email).
         Scan(&user.ID, &user.Name, &user.PasswordHash, &user.Email, &user.Phone)
     return user, err
+}
+
+func (s *SQLiteStore) AddSessionToken(user_id int) (string, time.Time, error) {
+    sessionToken := uuid.NewString()
+    expiresAt := time.Now().Add(24 * time.Hour)
+    
+    sessionTokenHash, err := bcrypt.GenerateFromPassword([]byte(sessionToken), 10)
+    if err != nil {
+        return "", time.Time{}, err
+    }
+
+	_, err = s.db.Exec(`
+        UPDATE users SET session_token_hash = ?, session_expires_at = ? WHERE id = ?
+    `, sessionTokenHash, expiresAt, user_id)
+    if err != nil {
+        return "", time.Time{}, err
+    }
+
+    return sessionToken, expiresAt, err
 }
 
 func (s *SQLiteStore) CreateTask(t app.Task) (int, error) {

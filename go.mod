@@ -5,6 +5,7 @@ go 1.24.0
 require (
 	github.com/glebarez/go-sqlite v1.22.0
 	github.com/golang-migrate/migrate/v4 v4.18.2
+	github.com/google/uuid v1.6.0
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/crypto v0.37.0
 )
@@ -12,7 +13,6 @@ require (
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect

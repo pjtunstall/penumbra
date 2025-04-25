@@ -1,0 +1,3 @@
+- Redirect to `"/dashboard"` from `"/"` and `"/register"` if already logged in, i.e. if there is a valid cookie.
+- Bring tests back up to date.
+- `handlers_test.go` uses testify. Elsewhere, e.g. `router_test.go`, testify is not used. Decide on a consistent system. Less dependencies is good, but testify might make the code clearer due to its more declarative style.
