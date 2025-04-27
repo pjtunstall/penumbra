@@ -12,7 +12,7 @@ import (
 
 //go:embed templates/*
 var tmplFS embed.FS
-var templates = template.Must(template.ParseFS(tmplFS, "templates/*.html"))
+var templates = template.Must(template.ParseFS(tmplFS, "templates/*.gohtml"))
 
 func main() {
     store := db.NewSQLiteStore("data/dev.db")
