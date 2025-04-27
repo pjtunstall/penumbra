@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"errors"
 	"log"
 	"time"
 
@@ -80,11 +81,19 @@ func (s *SQLiteStore) AddSessionToken(user_id int) (string, time.Time, error) {
 
 func (s *SQLiteStore) GetUserIdFromSessionToken(sessionToken string) (int, error) {
     if sessionToken == "" {
-        return 0, nil // todo: make this an error
+        return 0, errors.New("session token is empty")
     }
+
     var userId int
-    err := s.db.QueryRow(`SELECT id FROM users WHERE session_token = ?`, sessionToken).
-        Scan(&userId)
+    var sessionExpiresAt time.Time
+
+    err := s.db.QueryRow(`SELECT id, session_expires_at FROM users WHERE session_token = ?`, sessionToken).
+        Scan(&userId, &sessionExpiresAt)
+
+    if time.Now().After(sessionExpiresAt) {
+        return 0, errors.New("session token has expired")
+    }
+
     return userId, err
 }
 

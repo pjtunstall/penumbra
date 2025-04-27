@@ -38,7 +38,7 @@ func NewRouter(h Handler) http.Handler {
 
     mux.HandleFunc(("/dashboard"), func(w http.ResponseWriter, r *http.Request) {
         if r.Method == http.MethodGet {
-            h.HandleDashboard(w, r)
+            h.HandleProtected(w, r, h.HandleDashboard)
         } else {
             http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
         }
@@ -46,19 +46,19 @@ func NewRouter(h Handler) http.Handler {
 
     mux.HandleFunc("/tasks/create", func(w http.ResponseWriter, r *http.Request) {
         if r.Method == http.MethodGet {
-            h.HandleCreate(w, r)
+            h.HandleProtected(w, r, h.HandleCreate)
         } else {
             http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
         }
     })
 
-    // mux.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
-    //     if r.Method == http.MethodPost {
-    //         h.SubmitLogout(w, r)
-    //     } else {
-    //         http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-    //     }
-    // })
+    mux.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
+        if r.Method == http.MethodGet {
+            h.HandleLogout(w, r)
+        } else {
+            http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+        }
+    })
 
     // mux.HandleFunc("/tasks", func(w http.ResponseWriter, r *http.Request) {
     //     if r.Method == http.MethodPost {

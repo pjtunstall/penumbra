@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -23,6 +24,8 @@ type Handler interface {
     GetTask(http.ResponseWriter, *http.Request, string)
     HandleDashboard(http.ResponseWriter, *http.Request)
     HandleHome(http.ResponseWriter, *http.Request)
+    HandleProtected(http.ResponseWriter, *http.Request, func(http.ResponseWriter, *http.Request))
+    HandleLogout(http.ResponseWriter, *http.Request)
 }
 
 type RealHandler struct {
@@ -242,4 +245,31 @@ func (h *RealHandler) GetTask(w http.ResponseWriter, r *http.Request, id string)
 
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(task)
+}
+
+func (h *RealHandler) HandleProtected(w http.ResponseWriter, r *http.Request, handler func(http.ResponseWriter, *http.Request)) {
+    cookie, err := r.Cookie("session_token")
+    if err != nil {
+        log.Println("Error getting cookie: ", err)
+        http.Redirect(w, r, "/login", http.StatusSeeOther)
+        return
+    }
+
+    _, err = h.store.GetUserIdFromSessionToken(cookie.Value)
+    if err != nil {
+        log.Println("Error getting user id: ", err)
+        http.Redirect(w, r, "/login", http.StatusSeeOther)
+        return
+    }
+
+    handler(w, r)
+}
+
+func (h *RealHandler) HandleLogout(w http.ResponseWriter, r *http.Request) {
+    http.SetCookie(w, &http.Cookie{
+        Name:    "session_token",
+        Value:   "",
+        Expires: time.Unix(0, 0),
+    })
+    http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
