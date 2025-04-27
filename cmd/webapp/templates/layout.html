@@ -26,7 +26,8 @@
   <body class="min-h-screen bg-base-200 text-base-content">
     {{if eq .Page "login"}} {{template "login" .}} {{else if eq .Page
     "register"}} {{template "register" .}} {{else if eq .Page "dashboard"}}
-    {{template "dashboard" .}} {{end}}
+    {{template "dashboard" .}} {{else if eq .Page "create"}} {{template
+    "create"}} {{end}}
   </body>
 </html>
 {{ end }}

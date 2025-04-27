@@ -18,7 +18,7 @@ type Handler interface {
     SubmitLogin(http.ResponseWriter, *http.Request)
     RenderRegister(http.ResponseWriter, *http.Request)
     SubmitRegister(http.ResponseWriter, *http.Request)
-    RenderCreateTask(http.ResponseWriter, *http.Request)
+    HandleCreate(http.ResponseWriter, *http.Request)
     // SubmitCreateTask(http.ResponseWriter, *http.Request)
     GetTask(http.ResponseWriter, *http.Request, string)
     HandleDashboard(http.ResponseWriter, *http.Request)
@@ -173,15 +173,22 @@ func (h *RealHandler) HandleDashboard(w http.ResponseWriter, r *http.Request) {
     h.RenderPage(w, r, "dashboard", data)
 }
 
-func (h *RealHandler) RenderCreateTask(w http.ResponseWriter, r *http.Request) {
-    err := h.templates.ExecuteTemplate(w, "create-task", nil)
+func (h *RealHandler) HandleCreate(w http.ResponseWriter, r *http.Request) {
+    cookie, err := r.Cookie("session_token")
     if err != nil {
-        http.Error(w, "Internal Server Error: "+err.Error(), http.StatusInternalServerError)
+        log.Println("Error getting cookie: ", err)
+        http.Redirect(w, r, "/login", http.StatusSeeOther)
+        return
     }
 
-    // todo
+    _, err = h.store.GetUserIdFromSessionToken(cookie.Value)
+    if err != nil {
+        log.Println("Error getting user id: ", err)
+        http.Redirect(w, r, "/login", http.StatusSeeOther)
+        return
+    }
 
-    
+    h.RenderPage(w, r, "create", nil)
 }
 
 // func (h *RealHandler) SubmitCreateTask(w http.ResponseWriter, r *http.Request) {

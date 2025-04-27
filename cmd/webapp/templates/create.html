@@ -1,0 +1,45 @@
+{{define "create"}} {{template "navbar"}}
+<div class="flex justify-center items-center min-h-screen">
+  <div class="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
+    <div class="card-body">
+      <form action="/tasks/create" method="POST">
+        <label class="label">Title</label>
+        <input
+          type="text"
+          class="input"
+          name="title"
+          required
+          autocomplete="off"
+        />
+        <label class="label">Description</label>
+        <input
+          type="text"
+          class="input"
+          name="description"
+          required
+          autocomplete="off"
+        />
+
+        <label class="label">Due Date</label>
+        <script src="https://cdn.jsdelivr.net/npm/pikaday/pikaday.js"></script>
+        <input
+          type="text"
+          class="input pika-single"
+          id="myDatepicker"
+          name="due"
+          required
+        />
+        <script>
+          var picker = new Pikaday({
+            field: document.getElementById("myDatepicker"),
+          });
+        </script>
+
+        <div class="mt-4 text-left">
+          <button class="btn btn-neutral w-auto">Create Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{{end}}

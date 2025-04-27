@@ -46,7 +46,7 @@ func NewRouter(h Handler) http.Handler {
 
     mux.HandleFunc("/tasks/create", func(w http.ResponseWriter, r *http.Request) {
         if r.Method == http.MethodGet {
-            h.RenderCreateTask(w, r)
+            h.HandleCreate(w, r)
         } else {
             http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
         }
