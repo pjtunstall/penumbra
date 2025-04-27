@@ -16,10 +16,10 @@ type Store interface {
     CreateUser(user app.User) error
     AddSessionToken(user_id int) (string, time.Time, error)
     GetUserIdFromSessionToken(sessionToken string) (int, error)
-    SubmitCreateTask(task app.Task) (int, error)
     GetTaskById(id int) (app.Task, error)
     GetUserByEmail(email string) (app.User, error)
     GetAllTasks(user_id int) ([]app.Task, error)
+    SubmitCreate(task app.Task) (int, error)
 }
 
 type SQLiteStore struct {
@@ -97,7 +97,7 @@ func (s *SQLiteStore) GetUserIdFromSessionToken(sessionToken string) (int, error
     return userId, err
 }
 
-func (s *SQLiteStore) SubmitCreateTask(t app.Task) (int, error) {
+func (s *SQLiteStore) SubmitCreate(t app.Task) (int, error) {
     res, err := s.db.Exec(`INSERT INTO tasks (user_id, title, description, done, due) VALUES (?, ?, ?, ?, ?)`,
         t.UserId, t.Title, t.Description, t.Done, t.Due)
     if err != nil {
@@ -120,7 +120,7 @@ func (s *SQLiteStore) Close() error {
 }
 
 func (s *SQLiteStore) GetAllTasks(user_id int) ([]app.Task, error) {
-    rows, err := s.db.Query(`SELECT id, title, description, due FROM tasks WHERE user_id = ?`, user_id)
+    rows, err := s.db.Query(`SELECT id, title, description, done, due FROM tasks WHERE user_id = ?`, user_id)
     if err != nil {
         return nil, err
     }

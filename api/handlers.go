@@ -19,8 +19,8 @@ type Handler interface {
     SubmitLogin(http.ResponseWriter, *http.Request)
     RenderRegister(http.ResponseWriter, *http.Request)
     SubmitRegister(http.ResponseWriter, *http.Request)
-    HandleCreate(http.ResponseWriter, *http.Request)
-    // SubmitCreateTask(http.ResponseWriter, *http.Request)
+    RenderCreate(http.ResponseWriter, *http.Request)
+    SubmitCreate(http.ResponseWriter, *http.Request)
     GetTask(http.ResponseWriter, *http.Request, string)
     HandleDashboard(http.ResponseWriter, *http.Request)
     HandleHome(http.ResponseWriter, *http.Request)
@@ -176,7 +176,7 @@ func (h *RealHandler) HandleDashboard(w http.ResponseWriter, r *http.Request) {
     h.RenderPage(w, r, "dashboard", data)
 }
 
-func (h *RealHandler) HandleCreate(w http.ResponseWriter, r *http.Request) {
+func (h *RealHandler) RenderCreate(w http.ResponseWriter, r *http.Request) {
     cookie, err := r.Cookie("session_token")
     if err != nil {
         log.Println("Error getting cookie: ", err)
@@ -194,41 +194,45 @@ func (h *RealHandler) HandleCreate(w http.ResponseWriter, r *http.Request) {
     h.RenderPage(w, r, "create", nil)
 }
 
-// func (h *RealHandler) SubmitCreateTask(w http.ResponseWriter, r *http.Request) {
-//     var input app.Task
-//     if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-//         http.Error(w, "invalid input", http.StatusBadRequest)
-//         return
-//     }
+func (h *RealHandler) SubmitCreate(w http.ResponseWriter, r *http.Request) {
+    r.ParseForm()
+    title := r.FormValue("title")
+	description := r.FormValue("description")
+	dueStr := r.FormValue("due")
 
-//     if input.Due.IsZero() {
-//         input.Due = time.Now().Add(24 * time.Hour)
-//     }
+    dueDate, err := time.Parse("Mon Jan 2 2006", dueStr)
+	if err != nil {
+		http.Error(w, "Invalid date format", http.StatusBadRequest)
+		return
+	}
 
-//     cookie, err := r.Cookie("session_token")
-//     if err != nil {
-//         http.Error(w, "not logged in", http.StatusUnauthorized)
-//         return
-//     }
+    cookie, err := r.Cookie("session_token")
+    if err != nil {
+        http.Error(w, "not logged in", http.StatusUnauthorized)
+        return
+    }
 
-//     user_id, err := h.store.GetUserIdFromSessionToken(cookie.Value)
-//     if err != nil {
-//         http.Error(w, "not logged in", http.StatusUnauthorized)
-//         return
-//     }
+    user_id, err := h.store.GetUserIdFromSessionToken(cookie.Value)
+    if err != nil {
+        http.Error(w, "not logged in", http.StatusUnauthorized)
+        return
+    }
 
-//     input.UserId = user_id
+    task := app.Task{
+        UserId:      user_id,
+		Title:       title,
+		Description: description,
+		Due:         dueDate,
+	}
 
-//     id, err := h.store.SubmitCreateTask(input)
-//     if err != nil {
-//         http.Error(w, "failed to create task", http.StatusInternalServerError)
-//         return
-//     }
+    _, err = h.store.SubmitCreate(task)
+    if err != nil {
+        http.Error(w, "failed to create task", http.StatusInternalServerError)
+        return
+    }
 
-//     input.Id = id
-//     w.Header().Set("Content-Type", "application/json")
-//     json.NewEncoder(w).Encode(input)
-// }
+    http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+}
 
 func (h *RealHandler) GetTask(w http.ResponseWriter, r *http.Request, id string) {
     i, err := strconv.Atoi(id)

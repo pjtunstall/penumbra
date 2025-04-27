@@ -20,7 +20,7 @@ func TestSQLiteStore_CreateAndGetTask(t *testing.T) {
 		Done:        0,
 	}
 
-	id, err := store.SubmitCreateTask(task)
+	id, err := store.SubmitCreate(task)
 	if err != nil {
 		t.Fatalf("CreateTask failed: %v", err)
 	}
