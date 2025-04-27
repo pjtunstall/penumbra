@@ -21,7 +21,8 @@ type Handler interface {
     SubmitRegister(http.ResponseWriter, *http.Request)
     SubmitLogin(http.ResponseWriter, *http.Request)
     RenderDashboard(http.ResponseWriter, *http.Request)
-    CreateTask(http.ResponseWriter, *http.Request)
+    RenderCreateTask(http.ResponseWriter, *http.Request)
+    // SubmitCreateTask(http.ResponseWriter, *http.Request)
     GetTask(http.ResponseWriter, *http.Request, string)
 }
 
@@ -80,14 +81,12 @@ func (h *RealHandler) SubmitLogin(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    log.Println("Session token: ", sessionToken)
-
     http.SetCookie(w, &http.Cookie{
         Name:     "session_token",
         Value:    sessionToken,
         Path:     "/", // todo: Handle all routes correctly if logged in; don't show login or register forms.
         HttpOnly: true,
-        Secure:   false, // true in production
+        Secure:   false, // todo: Set to true (https) in production.
         Expires:  expiresAt,
     })
 
@@ -110,6 +109,7 @@ func (h *RealHandler) RenderRegister(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *RealHandler) SubmitRegister(w http.ResponseWriter, r *http.Request) {
+    log.Println("SubmitRegister")
     err := r.ParseForm()
     if err != nil {
         http.Error(w, "Bad Request", http.StatusBadRequest)
@@ -137,7 +137,7 @@ func (h *RealHandler) SubmitRegister(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    http.Redirect(w, r, "/login", http.StatusSeeOther)
+    http.Redirect(w, r, "/home", http.StatusSeeOther)
 }
 
 func (h *RealHandler) RenderDashboard(w http.ResponseWriter, r *http.Request) {
@@ -147,8 +147,6 @@ func (h *RealHandler) RenderDashboard(w http.ResponseWriter, r *http.Request) {
         http.Redirect(w, r, "/login", http.StatusSeeOther)
         return
     }
-
-    log.Println("Cookie value: ", cookie.Value)
 
     user_id, err := h.store.GetUserIdFromSessionToken(cookie.Value)
     if err != nil {
@@ -171,27 +169,52 @@ func (h *RealHandler) RenderDashboard(w http.ResponseWriter, r *http.Request) {
     }
 }
 
-func (h *RealHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
-    var input app.Task
-    if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-        http.Error(w, "invalid input", http.StatusBadRequest)
-        return
-    }
-
-    if input.Due.IsZero() {
-        input.Due = time.Now().Add(24 * time.Hour)
-    }
-
-    id, err := h.store.CreateTask(input)
+func (h *RealHandler) RenderCreateTask(w http.ResponseWriter, r *http.Request) {
+    err := h.templates.ExecuteTemplate(w, "create-task", nil)
     if err != nil {
-        http.Error(w, "failed to create task", http.StatusInternalServerError)
-        return
+        http.Error(w, "Internal Server Error: "+err.Error(), http.StatusInternalServerError)
     }
 
-    input.Id = id
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(input)
+    // todo
+
+    
 }
+
+// func (h *RealHandler) SubmitCreateTask(w http.ResponseWriter, r *http.Request) {
+//     var input app.Task
+//     if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+//         http.Error(w, "invalid input", http.StatusBadRequest)
+//         return
+//     }
+
+//     if input.Due.IsZero() {
+//         input.Due = time.Now().Add(24 * time.Hour)
+//     }
+
+//     cookie, err := r.Cookie("session_token")
+//     if err != nil {
+//         http.Error(w, "not logged in", http.StatusUnauthorized)
+//         return
+//     }
+
+//     user_id, err := h.store.GetUserIdFromSessionToken(cookie.Value)
+//     if err != nil {
+//         http.Error(w, "not logged in", http.StatusUnauthorized)
+//         return
+//     }
+
+//     input.UserId = user_id
+
+//     id, err := h.store.SubmitCreateTask(input)
+//     if err != nil {
+//         http.Error(w, "failed to create task", http.StatusInternalServerError)
+//         return
+//     }
+
+//     input.Id = id
+//     w.Header().Set("Content-Type", "application/json")
+//     json.NewEncoder(w).Encode(input)
+// }
 
 func (h *RealHandler) GetTask(w http.ResponseWriter, r *http.Request, id string) {
     i, err := strconv.Atoi(id)

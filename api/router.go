@@ -3,7 +3,6 @@ package api
 import (
 	"log"
 	"net/http"
-	"strings"
 )
 
 func NewRouter(h Handler) http.Handler {
@@ -20,18 +19,18 @@ func NewRouter(h Handler) http.Handler {
     mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
         switch r.Method {
         case http.MethodPost:
-            log.Println("Login hit with method:", r.Method)
             h.SubmitLogin(w, r)
         default:
-            log.Println("Login hit with method:", r.Method)
             http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
         }
     })
 
     mux.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
+        log.Println("register")
         if r.Method == http.MethodGet {
             h.RenderRegister(w, r)
         } else if r.Method == http.MethodPost {
+            log.Println("register post")
             h.SubmitRegister(w, r)
         } else {
             http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
@@ -39,7 +38,6 @@ func NewRouter(h Handler) http.Handler {
     })
 
     mux.HandleFunc(("/dashboard"), func(w http.ResponseWriter, r *http.Request) {
-        log.Println("Dashboard hit with method:", r.Method)
         if r.Method == http.MethodGet {
             h.RenderDashboard(w, r)
         } else {
@@ -47,22 +45,38 @@ func NewRouter(h Handler) http.Handler {
         }
     })
 
-    mux.HandleFunc("/tasks", func(w http.ResponseWriter, r *http.Request) {
-        if r.Method == http.MethodPost {
-            h.CreateTask(w, r)
+    mux.HandleFunc("/tasks/create", func(w http.ResponseWriter, r *http.Request) {
+        if r.Method == http.MethodGet {
+            h.RenderCreateTask(w, r)
         } else {
             http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
         }
     })
 
-    mux.HandleFunc("/tasks/", func(w http.ResponseWriter, r *http.Request) {
-        id := strings.TrimPrefix(r.URL.Path, "/tasks/")
-        if r.Method == http.MethodGet {
-            h.GetTask(w, r, id)
-        } else {
-            http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-        }
-    })
+    // mux.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
+    //     if r.Method == http.MethodPost {
+    //         h.SubmitLogout(w, r)
+    //     } else {
+    //         http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+    //     }
+    // })
+
+    // mux.HandleFunc("/tasks", func(w http.ResponseWriter, r *http.Request) {
+    //     if r.Method == http.MethodPost {
+    //         h.CreateTask(w, r)
+    //     } else {
+    //         http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+    //     }
+    // })
+
+    // mux.HandleFunc("/tasks/", func(w http.ResponseWriter, r *http.Request) {
+    //     id := strings.TrimPrefix(r.URL.Path, "/tasks/")
+    //     if r.Method == http.MethodGet {
+    //         h.GetTask(w, r, id)
+    //     } else {
+    //         http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+    //     }
+    // })
 
     return mux
 }

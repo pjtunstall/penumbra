@@ -14,12 +14,13 @@ func TestSQLiteStore_CreateAndGetTask(t *testing.T) {
 	due := time.Now().Add(24 * time.Hour)
 	task := app.Task{
 		Title:       "Test Task",
+		UserId:      1,
 		Description: "Testing",
-		Status:      "open",
 		Due:         due,
+		Done:        0,
 	}
 
-	id, err := store.CreateTask(task)
+	id, err := store.SubmitCreateTask(task)
 	if err != nil {
 		t.Fatalf("CreateTask failed: %v", err)
 	}
@@ -29,7 +30,7 @@ func TestSQLiteStore_CreateAndGetTask(t *testing.T) {
 		t.Fatalf("GetTask failed: %v", err)
 	}
 
-	if got.Title != task.Title || got.Description != task.Description || got.Status != task.Status || !got.Due.Equal(task.Due) {
+	if got.Title != task.Title || got.Description != task.Description || !got.Due.Equal(task.Due) || got.Done != task.Done {
 		t.Errorf("Got %+v, want %+v", got, task)
 	}
 }
