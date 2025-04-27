@@ -1,7 +1,6 @@
 package api
 
 import (
-	"log"
 	"net/http"
 )
 
@@ -10,7 +9,7 @@ func NewRouter(h Handler) http.Handler {
 
     mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
         if r.Method == http.MethodGet {
-            h.RenderHome(w, r)
+            h.HandleHome(w, r)
         } else {
             http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
         }
@@ -18,6 +17,8 @@ func NewRouter(h Handler) http.Handler {
 
     mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
         switch r.Method {
+        case http.MethodGet:
+            h.RenderLogin(w, r)
         case http.MethodPost:
             h.SubmitLogin(w, r)
         default:
@@ -26,11 +27,9 @@ func NewRouter(h Handler) http.Handler {
     })
 
     mux.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
-        log.Println("register")
         if r.Method == http.MethodGet {
             h.RenderRegister(w, r)
         } else if r.Method == http.MethodPost {
-            log.Println("register post")
             h.SubmitRegister(w, r)
         } else {
             http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
@@ -39,7 +38,7 @@ func NewRouter(h Handler) http.Handler {
 
     mux.HandleFunc(("/dashboard"), func(w http.ResponseWriter, r *http.Request) {
         if r.Method == http.MethodGet {
-            h.RenderDashboard(w, r)
+            h.HandleDashboard(w, r)
         } else {
             http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
         }

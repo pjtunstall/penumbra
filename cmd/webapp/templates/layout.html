@@ -24,8 +24,9 @@
   </head>
 
   <body class="min-h-screen bg-base-200 text-base-content">
-    {{if eq .Page "home"}} {{template "home" .}} {{else if eq .Page "register"}}
-    {{template "register" .}} {{end}}
+    {{if eq .Page "login"}} {{template "login" .}} {{else if eq .Page
+    "register"}} {{template "register" .}} {{else if eq .Page "dashboard"}}
+    {{template "dashboard" .}} {{end}}
   </body>
 </html>
 {{ end }}

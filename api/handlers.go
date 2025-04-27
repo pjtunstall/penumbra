@@ -14,14 +14,15 @@ import (
 )
 
 type Handler interface {
-    RenderHome(http.ResponseWriter, *http.Request)
+    RenderLogin(http.ResponseWriter, *http.Request)
+    SubmitLogin(http.ResponseWriter, *http.Request)
     RenderRegister(http.ResponseWriter, *http.Request)
     SubmitRegister(http.ResponseWriter, *http.Request)
-    SubmitLogin(http.ResponseWriter, *http.Request)
-    RenderDashboard(http.ResponseWriter, *http.Request)
     RenderCreateTask(http.ResponseWriter, *http.Request)
     // SubmitCreateTask(http.ResponseWriter, *http.Request)
     GetTask(http.ResponseWriter, *http.Request, string)
+    HandleDashboard(http.ResponseWriter, *http.Request)
+    HandleHome(http.ResponseWriter, *http.Request)
 }
 
 type RealHandler struct {
@@ -33,25 +34,45 @@ func NewHandler(store db.Store, templates *template.Template) *RealHandler {
     return &RealHandler{store: store, templates: templates}
 }
 
-func (h *RealHandler) RenderPage(w http.ResponseWriter, r *http.Request, page string) {
-    data := struct {
-        Page string
-    }{
-        Page: page,
+func (h *RealHandler) HandleHome(w http.ResponseWriter, r *http.Request) {
+    cookie, err := r.Cookie("session_token")
+    if err != nil {
+        log.Println("Error getting cookie: ", err)
+        http.Redirect(w, r, "/login", http.StatusSeeOther)
+        return
     }
 
-    err := h.templates.ExecuteTemplate(w, "layout", data)
+    _, err = h.store.GetUserIdFromSessionToken(cookie.Value)
+    if err != nil {
+        log.Println("Error getting user id: ", err)
+        http.Redirect(w, r, "/login", http.StatusSeeOther)
+        return
+    }
+
+    http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+}
+
+func (h *RealHandler) RenderPage(w http.ResponseWriter, r *http.Request, page string, data any) {
+    pageAndOtherData := struct {
+        Page string
+        Data any
+    }{
+        Page: page,
+        Data: data,
+    }
+
+    err := h.templates.ExecuteTemplate(w, "layout", pageAndOtherData)
     if err != nil {
         http.Error(w, "Internal Server Error: "+err.Error(), http.StatusInternalServerError)
     }
 }
 
-func (h *RealHandler) RenderHome(w http.ResponseWriter, r *http.Request) {
-    h.RenderPage(w, r, "home")
+func (h *RealHandler) RenderLogin(w http.ResponseWriter, r *http.Request) {
+    h.RenderPage(w, r, "login", nil)
 }
 
 func (h *RealHandler) RenderRegister(w http.ResponseWriter, r *http.Request) {
-    h.RenderPage(w, r, "register")
+    h.RenderPage(w, r, "register", nil)
 }
 
 func (h *RealHandler) SubmitLogin(w http.ResponseWriter, r *http.Request) {
@@ -86,13 +107,11 @@ func (h *RealHandler) SubmitLogin(w http.ResponseWriter, r *http.Request) {
     http.SetCookie(w, &http.Cookie{
         Name:     "session_token",
         Value:    sessionToken,
-        Path:     "/", // todo: Handle all routes correctly if logged in; don't show login or register forms.
+        Path:     "/",
         HttpOnly: true,
         Secure:   false, // todo: Set to true (https) in production.
         Expires:  expiresAt,
     })
-
-    log.Println("User " + user.Name + " logged in")
 
     http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }
@@ -129,7 +148,7 @@ func (h *RealHandler) SubmitRegister(w http.ResponseWriter, r *http.Request) {
     http.Redirect(w, r, "/home", http.StatusSeeOther)
 }
 
-func (h *RealHandler) RenderDashboard(w http.ResponseWriter, r *http.Request) {
+func (h *RealHandler) HandleDashboard(w http.ResponseWriter, r *http.Request) {
     cookie, err := r.Cookie("session_token")
     if err != nil {
         log.Println("Error getting cookie: ", err)
@@ -151,11 +170,7 @@ func (h *RealHandler) RenderDashboard(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    err = h.templates.ExecuteTemplate(w, "dashboard", data)
-    if err != nil {
-        log.Println("Error executing template: ", err)
-        http.Error(w, "Internal Server Error: ", http.StatusInternalServerError)
-    }
+    h.RenderPage(w, r, "dashboard", data)
 }
 
 func (h *RealHandler) RenderCreateTask(w http.ResponseWriter, r *http.Request) {

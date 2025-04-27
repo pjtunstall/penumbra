@@ -1,0 +1,30 @@
+{{define "login"}}
+<div class="flex justify-center items-center min-h-screen">
+  <div class="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
+    <div class="card-body">
+      <fieldset class="fieldset">
+        <form action="/login" method="POST">
+          <label class="label">Email</label>
+          <input type="email" class="input" name="email" placeholder="Email" />
+          <label class="label">Password</label>
+          <input
+            type="password"
+            class="input"
+            name="password"
+            placeholder="Password"
+          />
+          <div class="text-center mt-2 text-sm">
+            <a class="link link-hover">Forgot password?</a>
+            <span class="mx-2 text-base-content/50">|</span>
+            <a class="link link-hover" href="/register">Register</a>
+          </div>
+          <div class="mt-4 text-left">
+            <button class="btn btn-neutral w-auto">Log in</button>
+          </div>
+        </form>
+      </fieldset>
+    </div>
+  </div>
+
+  <div>{{end}}</div>
+</div>
