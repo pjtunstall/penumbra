@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"sort"
 	"strconv"
 	"time"
 
@@ -13,6 +14,12 @@ import (
 	"dts/app"
 	"dts/db"
 )
+
+type TaskView struct {
+    Title     string
+    Status    string
+    DuePretty string
+}
 
 type Handler interface {
     RenderLogin(http.ResponseWriter, *http.Request)
@@ -166,13 +173,26 @@ func (h *RealHandler) HandleDashboard(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    data, err := h.store.GetAllTasks(user_id)
+    preData, err := h.store.GetAllTasks(user_id)
     if err != nil {
         log.Println("Error getting tasks: ", err)
         http.Error(w, "Internal Server Error", http.StatusInternalServerError)
         return
     }
 
+    sort.Slice(preData, func(i, j int) bool {
+        return preData[i].Due.Before(preData[j].Due)
+    })
+
+    var data []TaskView
+    for _, task := range preData {
+        data = append(data, TaskView{
+            Title:       task.Title,
+            Status:      task.Status,
+            DuePretty:   task.Due.Format("Mon Jan 2 2006"),
+        })
+    }
+   
     h.RenderPage(w, r, "dashboard", data)
 }
 
@@ -205,6 +225,8 @@ func (h *RealHandler) SubmitCreate(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid date format", http.StatusBadRequest)
 		return
 	}
+
+    dueDate = time.Date(dueDate.Year(), dueDate.Month(), dueDate.Day(), 23, 59, 59, 999999999, dueDate.Location())
 
     cookie, err := r.Cookie("session_token")
     if err != nil {

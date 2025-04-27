@@ -11,13 +11,14 @@
         </th>
         <th>Title</th>
         <th>Status</th>
+        <th>Due</th>
         <th></th>
       </tr>
     </thead>
     <!-- body -->
     <tbody>
       {{range .}}
-      <tr>
+      <tr class="hover:bg-base-300">
         <th>
           <label>
             <input type="checkbox" class="checkbox" />
@@ -31,10 +32,7 @@
           </div>
         </td>
         <td>{{.Status}}</td>
-        <td>{{.Due}}</td>
-        <th>
-          <button class="btn btn-ghost btn-xs">description</button>
-        </th>
+        <td>{{.DuePretty}}</td>
       </tr>
       {{end}}
     </tbody>
