@@ -1,4 +1,19 @@
 {{define "table"}}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const thead = document.querySelector("thead");
+    const rows = document.querySelectorAll("tbody tr");
+
+    thead.addEventListener("mouseenter", () => {
+      rows.forEach((row) => row.classList.add("bg-base-300"));
+    });
+
+    thead.addEventListener("mouseleave", () => {
+      rows.forEach((row) => row.classList.remove("bg-base-300"));
+    });
+  });
+</script>
+
 <div class="overflow-x-auto">
   <table class="table">
     <!-- head -->
@@ -25,11 +40,13 @@
           </label>
         </th>
         <td>
-          <div class="flex items-center gap-3">
-            <div>
-              <div class="font-bold">{{.Title}}</div>
+          <a href="/task/{{.Id}}">
+            <div class="flex items-center gap-3">
+              <div>
+                <div class="font-bold">{{.Title}}</div>
+              </div>
             </div>
-          </div>
+          </a>
         </td>
         <td>{{.Status}}</td>
         <td>{{.DuePretty}}</td>

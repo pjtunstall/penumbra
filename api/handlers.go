@@ -1,7 +1,7 @@
 package api
 
 import (
-	"encoding/json"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -16,9 +16,16 @@ import (
 )
 
 type TaskView struct {
+    Id        int
     Title     string
     Status    string
     DuePretty string
+    Description string
+}
+
+func (t TaskView) String() string {
+    return fmt.Sprintf("Task{Id: %d, Title: %s, Description: %s, Status: %s, Due: %s}",
+        t.Id, t.Title, t.Description, t.Status, t.DuePretty)
 }
 
 type Handler interface {
@@ -187,6 +194,7 @@ func (h *RealHandler) HandleDashboard(w http.ResponseWriter, r *http.Request) {
     var data []TaskView
     for _, task := range preData {
         data = append(data, TaskView{
+            Id:          task.Id,
             Title:       task.Title,
             Status:      task.Status,
             DuePretty:   task.Due.Format("Mon Jan 2 2006"),
@@ -257,6 +265,20 @@ func (h *RealHandler) SubmitCreate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *RealHandler) GetTask(w http.ResponseWriter, r *http.Request, id string) {
+    cookie, err := r.Cookie("session_token")
+    if err != nil {
+        log.Println("Error getting cookie: ", err)
+        http.Redirect(w, r, "/login", http.StatusSeeOther)
+        return
+    }
+
+    _, err = h.store.GetUserIdFromSessionToken(cookie.Value)
+    if err != nil {
+        log.Println("Error getting user id: ", err)
+        http.Redirect(w, r, "/login", http.StatusSeeOther)
+        return
+    }
+
     i, err := strconv.Atoi(id)
     if err != nil {
         http.Error(w, "invalid Id", http.StatusBadRequest)
@@ -269,8 +291,15 @@ func (h *RealHandler) GetTask(w http.ResponseWriter, r *http.Request, id string)
         return
     }
 
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(task)
+    prettyTask := TaskView{
+        Id:          task.Id,
+        Title:       task.Title,
+        Status:      task.Status,
+        DuePretty:   task.Due.Format("Mon Jan 2 2006"),
+        Description: task.Description,
+    }
+
+    h.RenderPage(w, r, "task", prettyTask)
 }
 
 func (h *RealHandler) HandleProtected(w http.ResponseWriter, r *http.Request, handler func(http.ResponseWriter, *http.Request)) {

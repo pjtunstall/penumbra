@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"strings"
 )
 
 func NewRouter(h Handler) http.Handler {
@@ -70,14 +71,14 @@ func NewRouter(h Handler) http.Handler {
     //     }
     // })
 
-    // mux.HandleFunc("/tasks/", func(w http.ResponseWriter, r *http.Request) {
-    //     id := strings.TrimPrefix(r.URL.Path, "/tasks/")
-    //     if r.Method == http.MethodGet {
-    //         h.GetTask(w, r, id)
-    //     } else {
-    //         http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-    //     }
-    // })
+    mux.HandleFunc("/task/", func(w http.ResponseWriter, r *http.Request) {
+        id := strings.TrimPrefix(r.URL.Path, "/task/")
+        if r.Method == http.MethodGet {
+            h.GetTask(w, r, id)
+        } else {
+            http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+        }
+    })
 
     return mux
 }
