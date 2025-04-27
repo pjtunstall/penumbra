@@ -27,7 +27,8 @@
     {{if eq .Page "login"}} {{template "login" .}} {{else if eq .Page
     "register"}} {{template "register" .}} {{else if eq .Page "dashboard"}}
     {{template "dashboard" .}} {{else if eq .Page "create"}} {{template
-    "create"}} {{else if eq .Page "task"}} {{template "task" .}} {{end}}
+    "create"}} {{else if eq .Page "task"}} {{template "task" .Data}} {{else if
+    eq .Page "tasks"}} {{template "tasks" .}} {{end}}
   </body>
 </html>
 {{ end }}

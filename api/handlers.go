@@ -40,6 +40,7 @@ type Handler interface {
     HandleHome(http.ResponseWriter, *http.Request)
     HandleProtected(http.ResponseWriter, *http.Request, func(http.ResponseWriter, *http.Request))
     HandleLogout(http.ResponseWriter, *http.Request)
+    HandleAllTasks(http.ResponseWriter, *http.Request)
 }
 
 type RealHandler struct {
@@ -327,4 +328,44 @@ func (h *RealHandler) HandleLogout(w http.ResponseWriter, r *http.Request) {
         Expires: time.Unix(0, 0),
     })
     http.Redirect(w, r, "/login", http.StatusSeeOther)
+}
+
+func (h *RealHandler) HandleAllTasks(w http.ResponseWriter, r *http.Request) {
+    cookie, err := r.Cookie("session_token")
+    if err != nil {
+        log.Println("Error getting cookie: ", err)
+        http.Redirect(w, r, "/login", http.StatusSeeOther)
+        return
+    }
+
+    user_id, err := h.store.GetUserIdFromSessionToken(cookie.Value)
+    if err != nil {
+        log.Println("Error getting user id: ", err)
+        http.Redirect(w, r, "/login", http.StatusSeeOther)
+        return
+    }
+
+    preData, err := h.store.GetAllTasks(user_id)
+    if err != nil {
+        log.Println("Error getting tasks: ", err)
+        http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+        return
+    }
+
+    sort.Slice(preData, func(i, j int) bool {
+        return preData[i].Due.Before(preData[j].Due)
+    })
+
+    var data []TaskView
+    for _, task := range preData {
+        data = append(data, TaskView{
+            Id:          task.Id,
+            Title:       task.Title,
+            Status:      task.Status,
+            Description: task.Description,
+            DuePretty:   task.Due.Format("Mon Jan 2 2006"),
+        })
+    }
+
+    h.RenderPage(w, r, "tasks", data)
 }

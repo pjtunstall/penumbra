@@ -22,9 +22,49 @@
           </button>
         </a>
       </div>
-      <h2 class="card-title">{{.Data.Title}}</h2>
-      <p>{{.Data.Description}}</p>
-      <p>{{.Data.DuePretty}}</p>
+      <form action="/tasks/edit" method="POST">
+        <label class="label">Title</label>
+        <input
+          type="text"
+          class="input"
+          name="title"
+          value="{{.Title}}"
+          required
+          autocomplete="off"
+        />
+        <label class="label">Description</label>
+        <input
+          type="text"
+          class="input"
+          name="description"
+          value="{{.Description}}"
+          required
+          autocomplete="off"
+        />
+
+        <label class="label">Due Date</label>
+        <script src="https://cdn.jsdelivr.net/npm/pikaday/pikaday.js"></script>
+        <input
+          type="text"
+          class="input pika-single"
+          id="myDatepicker"
+          name="due"
+          value="{{.DuePretty}}"
+          required
+        />
+        <script>
+          var picker = new Pikaday({
+            field: document.getElementById("myDatepicker"),
+          });
+        </script>
+
+        <div>{{.Status}}</div>
+
+        <div class="flex justify-between mt-4">
+          <button class="btn btn-neutral w-auto">Update Task</button>
+          <button class="btn btn-neutral w-auto">Delete Task</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
