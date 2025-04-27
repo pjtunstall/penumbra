@@ -4,10 +4,8 @@ import (
 	"encoding/json"
 	"html/template"
 	"log"
-	"math/rand"
 	"net/http"
 	"strconv"
-	"time"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -35,21 +33,25 @@ func NewHandler(store db.Store, templates *template.Template) *RealHandler {
     return &RealHandler{store: store, templates: templates}
 }
 
-func (h *RealHandler) RenderHome(w http.ResponseWriter, r *http.Request) {
-    rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
-    flag := rnd.Intn(2)
+func (h *RealHandler) RenderPage(w http.ResponseWriter, r *http.Request, page string) {
     data := struct {
-        Flag int
         Page string
     }{
-        Flag: flag,
-        Page: "home",
+        Page: page,
     }
 
     err := h.templates.ExecuteTemplate(w, "layout", data)
     if err != nil {
         http.Error(w, "Internal Server Error: "+err.Error(), http.StatusInternalServerError)
     }
+}
+
+func (h *RealHandler) RenderHome(w http.ResponseWriter, r *http.Request) {
+    h.RenderPage(w, r, "home")
+}
+
+func (h *RealHandler) RenderRegister(w http.ResponseWriter, r *http.Request) {
+    h.RenderPage(w, r, "register")
 }
 
 func (h *RealHandler) SubmitLogin(w http.ResponseWriter, r *http.Request) {
@@ -93,19 +95,6 @@ func (h *RealHandler) SubmitLogin(w http.ResponseWriter, r *http.Request) {
     log.Println("User " + user.Name + " logged in")
 
     http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
-}
-
-func (h *RealHandler) RenderRegister(w http.ResponseWriter, r *http.Request) {
-    data := struct {
-        Page string
-    }{
-        Page: "register",
-    }
-
-    err := h.templates.ExecuteTemplate(w, "layout", data)
-    if err != nil {
-        http.Error(w, "Internal Server Error: "+err.Error(), http.StatusInternalServerError)
-    }
 }
 
 func (h *RealHandler) SubmitRegister(w http.ResponseWriter, r *http.Request) {
