@@ -42,6 +42,7 @@ type Handler interface {
     HandleLogout(http.ResponseWriter, *http.Request)
     HandleAllTasks(http.ResponseWriter, *http.Request)
     DeleteTask(http.ResponseWriter, *http.Request, string)
+    UpdateTask(http.ResponseWriter, *http.Request, string)
 }
 
 type RealHandler struct {
@@ -369,6 +370,59 @@ func (h *RealHandler) HandleAllTasks(w http.ResponseWriter, r *http.Request) {
     }
 
     h.RenderPage(w, r, "tasks", data)
+}
+
+func (h *RealHandler) UpdateTask(w http.ResponseWriter, r *http.Request, id string) {
+    cookie, err := r.Cookie("session_token")
+    if err != nil {
+        log.Println("Error getting cookie: ", err)
+        http.Redirect(w, r, "/login", http.StatusSeeOther)
+        return
+    }
+
+    _, err = h.store.GetUserIdFromSessionToken(cookie.Value)
+    if err != nil {
+        log.Println("Error getting user id: ", err)
+        http.Redirect(w, r, "/login", http.StatusSeeOther)
+        return
+    }
+
+    if err := r.ParseForm(); err != nil {
+        log.Println("Error parsing form: ", err)
+        http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+        return
+    }
+
+    idInt, err := strconv.Atoi(id)
+    if err != nil {
+        http.Error(w, "invalid Id", http.StatusBadRequest)
+        return
+    }
+    title := r.FormValue("title")
+    status := r.FormValue("status")
+    description := r.FormValue("description")
+    due := r.FormValue("due")
+    parsedDueDate, err := time.Parse("Mon Jan 2 2006", due)
+	if err != nil {
+		http.Error(w, "Invalid date format", http.StatusBadRequest)
+		return
+	}
+
+    updatedTask := app.Task{
+        Id:          idInt,
+        Title:       title,
+        Status:      status,
+        Description: description,
+        Due:         parsedDueDate,
+    }
+
+    err = h.store.UpdateTask(updatedTask)
+    if err != nil {
+        http.Error(w, "not found", http.StatusNotFound)
+        return
+    }
+
+    http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }
 
 func (h *RealHandler) DeleteTask(w http.ResponseWriter, r *http.Request, id string) {

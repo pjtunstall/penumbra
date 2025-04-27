@@ -80,14 +80,14 @@ func NewRouter(h Handler) http.Handler {
         }
     })
     
-    // mux.HandleFunc("/task/edit/", func(w http.ResponseWriter, r *http.Request) {
-    //     id := strings.TrimPrefix(r.URL.Path, "/task/edit/")
-    //     if r.Method == http.MethodPost {
-    //         h.EditTask(w, r, id)
-    //     } else {
-    //         http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-    //     }
-    // })
+    mux.HandleFunc("/tasks/update/", func(w http.ResponseWriter, r *http.Request) {
+        id := strings.TrimPrefix(r.URL.Path, "/tasks/update/")
+        if r.Method == http.MethodPost {
+            h.UpdateTask(w, r, id)
+        } else {
+            http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+        }
+    })
 
     mux.HandleFunc("/tasks/delete/", func(w http.ResponseWriter, r *http.Request) {
         id := strings.TrimPrefix(r.URL.Path, "/tasks/delete/")
