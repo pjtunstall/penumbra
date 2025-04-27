@@ -20,6 +20,7 @@ type Store interface {
     GetUserByEmail(email string) (app.User, error)
     GetAllTasks(user_id int) ([]app.Task, error)
     SubmitCreate(task app.Task) (int, error)
+    DeleteTask(id int) error
 }
 
 type SQLiteStore struct {
@@ -137,4 +138,7 @@ func (s *SQLiteStore) GetAllTasks(user_id int) ([]app.Task, error) {
     return tasks, nil
 }
 
-// Add UpdateTask, DeleteTask, GetAllTasks later
+func (s *SQLiteStore) DeleteTask(id int) error {
+    _, err := s.db.Exec(`DELETE FROM tasks WHERE id = ?`, id)
+    return err
+}

@@ -23,6 +23,8 @@
         </a>
       </div>
       <form action="/tasks/edit" method="POST">
+        <input type="hidden" name="id" value="{{.Id}}" />
+
         <label class="label">Title</label>
         <input
           type="text"
@@ -61,8 +63,20 @@
         <div>{{.Status}}</div>
 
         <div class="flex justify-between mt-4">
-          <button class="btn btn-neutral w-auto">Update Task</button>
-          <button class="btn btn-neutral w-auto">Delete Task</button>
+          <button
+            type="submit"
+            formaction="/tasks/edit/{{.Id}}"
+            class="btn btn-neutral w-auto"
+          >
+            Update Task
+          </button>
+          <button
+            type="submit"
+            formaction="/tasks/delete/{{.Id}}"
+            class="btn btn-neutral w-auto"
+          >
+            Delete Task
+          </button>
         </div>
       </form>
     </div>
