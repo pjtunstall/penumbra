@@ -44,6 +44,7 @@ type Handler interface {
     HandleAllTasks(http.ResponseWriter, *http.Request)
     DeleteTask(http.ResponseWriter, *http.Request, string)
     UpdateTask(http.ResponseWriter, *http.Request, string)
+    HandleAbout(http.ResponseWriter, *http.Request)
 }
 
 type RealHandler struct {
@@ -304,6 +305,10 @@ func (h *RealHandler) GetTask(w http.ResponseWriter, r *http.Request, id string)
     }
 
     h.RenderPage(w, r, "task", prettyTask)
+}
+
+func (h *RealHandler) HandleAbout(w http.ResponseWriter, r *http.Request) {
+    h.RenderPage(w, r, "about", nil)
 }
 
 func (h *RealHandler) HandleProtected(w http.ResponseWriter, r *http.Request, handler func(http.ResponseWriter, *http.Request)) {

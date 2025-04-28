@@ -1,7 +1,8 @@
-- Untangle enpoints.
-- Redirect to `"/dashboard"` from `"/"` and `"/register"` if already logged in, i.e. if there is a valid cookie.
 - `handlers_test.go` uses testify. Elsewhere, e.g. `router_test.go`, testify is not used. Decide on a consistent system. Less dependencies is good, but testify might make the code clearer due to its more declarative style.
 - Add more checking around task status to ensure done is converted correctly and never set to an anomalous value.
 - Sanitize all inputs and restrict their size.
-- Error messages for the user.
+- More thought-out and consistent error handling. Consider when to panic and what to log, and in what consistent format.
 - Have an error page template to gracefully display error messages that the user should see.
+- Be more consistent about `task` versus `tasks`, especially in names of routes.
+- General refactor: see what can be simplified.
+- At the moment, handlers are wrapped in `HandleProtected` only if they don't have another argument besides the response writer and request; otherwise, they check authorization themselves. This could be done more consistently or at least without the repetition.
