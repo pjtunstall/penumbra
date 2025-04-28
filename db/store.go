@@ -39,20 +39,28 @@ func NewSQLiteStore(path string) *SQLiteStore {
         log.Fatal(err)
     }
 
-    createTable := `
-    CREATE TABLE IF NOT EXISTS tasks (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        title TEXT NOT NULL,
-        description TEXT,
-        done INTEGER NOT NULL,
-        due DATETIME NOT NULL
-    )`
-    if _, err := db.Exec(createTable); err != nil {
+    panicIfTablesDoNotExist(db)
+
+    return &SQLiteStore{db: db, Path: path}
+}
+
+func panicIfTablesDoNotExist(db *sql.DB) {
+    var tableName string
+    err := db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name='tasks';").Scan(&tableName)
+    if err != nil {
+        if err == sql.ErrNoRows {
+            panic("tasks table does not exist in the database")
+        }
         log.Fatal(err)
     }
 
-    return &SQLiteStore{db: db, Path: path}
+    err = db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name='users';").Scan(&tableName)
+    if err != nil {
+        if err == sql.ErrNoRows {
+            panic("users table does not exist in the database")
+        }
+        log.Fatal(err)
+    }
 }
 
 func (s *SQLiteStore) CreateUser(user app.User) error {

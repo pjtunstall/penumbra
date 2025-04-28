@@ -102,21 +102,21 @@ func (h *RealHandler) RenderRegister(w http.ResponseWriter, r *http.Request) {
 func (h *RealHandler) SubmitLogin(w http.ResponseWriter, r *http.Request) {
     err := r.ParseForm()
     if err != nil {
-        http.Error(w, "Bad Request", http.StatusBadRequest)
         log.Println("Error parsing form: ", err)
+        http.Redirect(w, r, "/login", http.StatusSeeOther)
         return
     }
 
     user, err := h.store.GetUserByEmail(r.FormValue("email"))
     if err != nil {
-        http.Error(w, "Bad Request", http.StatusBadRequest)
         log.Println("Error getting user: ", err)
+        http.Redirect(w, r, "/login", http.StatusSeeOther)
         return
     }
 
     if err := bcrypt.CompareHashAndPassword(user.PasswordHash, []byte(r.FormValue("password"))); err != nil {
-        http.Error(w, "Bad Request", http.StatusBadRequest)
         log.Println("Error comparing passwords: ", err)
+        http.Redirect(w, r, "/login", http.StatusSeeOther)
         return
     }
 

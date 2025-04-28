@@ -20,6 +20,7 @@
 
 - Ensure that error handling is consistent.
 - Consider when to panic and what to log, and in what format.
+- Notify user if their username or password is incorrect.
 - Have an error page template to gracefully display error messages that the user in the name.
 - Add more checking around task status to ensure done is converted correctly and never set to an anomalous value.
 
