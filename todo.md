@@ -2,7 +2,7 @@
 - Add more checking around task status to ensure done is converted correctly and never set to an anomalous value.
 - Sanitize all inputs and restrict their size.
 - More thought-out and consistent error handling. Consider when to panic and what to log, and in what consistent format.
-- Have an error page template to gracefully display error messages that the user should see.
+- Have an error page template to gracefully display error messages that the user in the name.
 - Be more consistent about `task` versus `tasks`, especially in names of routes.
 - General refactor: see what can be simplified.
 - At the moment, handlers are wrapped in `HandleProtected` only if they don't have another argument besides the response writer and request; otherwise, they check authorization themselves. This could be done more consistently or at least without the repetition.
