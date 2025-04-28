@@ -1,9 +1,12 @@
 package api
 
-// todo: This test file uses testify. Elsewhere, e.g. router_test, testify is not used. Decide on a consistent system. Less dependencies is good, but testify might make the code clearer due to its more declarative style.
-
 import (
 	"dts/app"
+	"html/template"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
 	"time"
 
 	"github.com/stretchr/testify/mock"
@@ -38,75 +41,74 @@ func (m *MockSQLiteStore) GetAllTasks(user_id int) ([]app.Task, error) {
     return args.Get(0).([]app.Task), args.Error(1)
 }
 
-// func (m *MockSQLiteStore) RenderCreateTask() (int, error) {
-//     args := m.Called()
-//     return args.Int(0), args.Error(1)
-// }
+func (m *MockSQLiteStore) RenderCreate() (int, error) {
+    args := m.Called()
+    return args.Int(0), args.Error(1)
+}
 
-// func (m *MockSQLiteStore) SubmitCreateTask(task app.Task) (int, error) {
-//     args := m.Called(task)
-//     return args.Int(0), args.Error(1)
-// }
+func (m *MockSQLiteStore) SubmitCreate(task app.Task) (int, error) {
+    args := m.Called(task)
+    return args.Int(0), args.Error(1)
+}
 
 func (m *MockSQLiteStore) GetTaskById(id int) (app.Task, error) {
     args := m.Called(id)
     return args.Get(0).(app.Task), args.Error(1)
 }
 
-// func TestSubmitCreateTask(t *testing.T) {
-//     mockStore := &MockSQLiteStore{}
-//     var templates *template.Template
-//     handler := NewHandler(mockStore, templates)
+func (m *MockSQLiteStore) DoneTask(id int) error {
+    args := m.Called(id)
+    return args.Error(0)
+}
 
-//     fixedTime := time.Date(2025, 4, 21, 10, 0, 0, 0, time.UTC)
-// 	task := app.Task{
-//     	Title: "Test Task",
-//     	Due:   fixedTime,
-// 	}
+func (m *MockSQLiteStore) DeleteTask(id int) error {
+    args := m.Called(id)
+    return args.Error(0)
+}
 
-//     mockStore.On("SubmitCreateTask", task).Return(1, nil)
+func (m *MockSQLiteStore) UpdateTask(task app.Task) error {
+    args := m.Called(task)
+    return args.Error(0)
+}
 
-//     body, _ := json.Marshal(task)
-//     req := httptest.NewRequest("POST", "/tasks/create", bytes.NewReader(body))
-//     w := httptest.NewRecorder()
+func (m *MockSQLiteStore) SetTaskDone(id int) error {
+    args := m.Called()
+    return args.Error(1)
+}
 
-//     handler.SubmitCreateTask(w, req)
+func TestRenderPage(t *testing.T) {
+    tmpl := template.Must(template.New("layout").Parse("<html>{{.Page}}</html>"))
+    handler := &RealHandler{
+        templates: tmpl,
+    }
 
-//     assert.Equal(t, http.StatusOK, w.Code)
-//     var createdTask app.Task
-//     err := json.NewDecoder(w.Body).Decode(&createdTask)
-//     assert.NoError(t, err)
-//     assert.Equal(t, 1, createdTask.Id)
-//     mockStore.AssertExpectations(t)
-// }
+    req := httptest.NewRequest(http.MethodGet, "/page", nil)
+    res := httptest.NewRecorder()
 
-// func TestGetTask(t *testing.T) {
-//     mockStore := &MockSQLiteStore{}
-//     var templates *template.Template
-//     handler := NewHandler(mockStore, templates)
+    handler.RenderPage(res, req, "home", nil)
 
-// 	due := time.Date(2025, 4, 21, 10, 0, 0, 0, time.UTC)
-//     task := app.Task{
-//         UserId:      1,
-//         Title:       "Test Task",
-//         Description: "Testing",
-//         Status:      "open",
-//         Done:        0,
-//         Due:         due,
-//     }
+    body := res.Body.String()
+    if !strings.Contains(body, "home") {
+        t.Errorf("Expected page content to include 'home', but got %s", body)
+    }
+}
 
-//     mockStore.On("GetTaskById", 1).Return(task, nil)
 
-//     req := httptest.NewRequest("GET", "/tasks/1", nil)
-//     w := httptest.NewRecorder()
+func TestHandleHomeMissingCookie(t *testing.T) {
+    req := httptest.NewRequest(http.MethodGet, "/home", nil)
+    res := httptest.NewRecorder()
 
-//     handler.GetTask(w, req, "1")
+    handler := &RealHandler{
+    }
 
-//     assert.Equal(t, http.StatusOK, w.Code)
-//     var returnedTask app.Task
-//     err := json.NewDecoder(w.Body).Decode(&returnedTask)
-//     assert.NoError(t, err)
-//     assert.Equal(t, 1, returnedTask.Id)
-//     assert.Equal(t, "Test Task", returnedTask.Title)
-//     mockStore.AssertExpectations(t)
-// }
+    handler.HandleHome(res, req)
+
+    if res.Code != http.StatusSeeOther {
+        t.Errorf("Expected status %v, got %v", http.StatusSeeOther, res.Code)
+    }
+
+    location := res.Header().Get("Location")
+    if location != "/login" {
+        t.Errorf("Expected redirect to /login, got %v", location)
+    }
+}

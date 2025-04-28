@@ -15,6 +15,11 @@ import (
 	"dts/db"
 )
 
+type PageAndOtherData struct {
+    Page    string
+    Data    any
+}
+
 type TaskView struct {
     Id        int
     Title     string
@@ -75,10 +80,7 @@ func (h *RealHandler) HandleHome(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *RealHandler) RenderPage(w http.ResponseWriter, r *http.Request, page string, data any) {
-    pageAndOtherData := struct {
-        Page string
-        Data any
-    }{
+    pageAndOtherData := PageAndOtherData{
         Page: page,
         Data: data,
     }
@@ -147,7 +149,6 @@ func (h *RealHandler) SubmitRegister(w http.ResponseWriter, r *http.Request) {
     }
 
     // todo: prevent passwords larget than 72 bytes, bycrypt's limit
-    // todo: 
     password_hash, err := bcrypt.GenerateFromPassword([]byte(r.FormValue("password")), 10)
     if err != nil {
         http.Error(w, "Internal Server Error: "+err.Error(), http.StatusInternalServerError)

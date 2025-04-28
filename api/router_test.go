@@ -1,181 +1,193 @@
 package api_test
 
-// import (
-// 	"dts/api"
-// 	"net/http"
-// 	"net/http/httptest"
-// 	"testing"
-// )
+import (
+	"bytes"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"testing"
 
-// type mockHandler struct {
-// 	handleHomeCalled bool
-// 	handleLoginCalled bool
-// 	renderRegisterCalled bool
-// 	submitRegisterCalled bool
-// 	submitLoginCalled bool
-// 	renderDashboardCalled bool
-// 	getTaskCalled    bool
-// 	gotId        string
-// 	renderCreateCalled bool
-// 	submitCreateCalled bool
-// 	deleteTaskCalled bool
-// 	doneTaskCalled bool
-// 	handleAboutCalled bool
-// 	handleAllTasksCalled bool
-// 	handleDashboardCalled bool
-// 	handleLogoutCalled bool
-// 	handleProtectedCalled bool
-// }
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
-// func (m *mockHandler) HandleHome(w http.ResponseWriter, r *http.Request) {
-// 	m.handleHomeCalled = true
-// 	w.WriteHeader(http.StatusOK)
-// }
+	"dts/api"
+)
 
-// func (m *mockHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
-// 	m.handleLoginCalled = true
-// 	w.WriteHeader(http.StatusOK)
-// }
+type MockHandler struct {
+	mock.Mock
+}
 
-// func (m *mockHandler) HandleLogout(w http.ResponseWriter, r *http.Request) {
-// 	m.handleLoginCalled = true
-// 	w.WriteHeader(http.StatusOK)
-// }
+func (m *MockHandler) HandleHome(w http.ResponseWriter, r *http.Request) {
+	m.Called(w, r)
+}
 
-// func (m *mockHandler) HandleDashboard(w http.ResponseWriter, r *http.Request) {
-// 	m.handleDashboardCalled = true
-// 	w.WriteHeader(http.StatusOK)
-// }
+func (m *MockHandler) RenderLogin(w http.ResponseWriter, r *http.Request) {
+	m.Called(w, r)
+}
 
-// func (m *mockHandler) HandleAbout(w http.ResponseWriter, r *http.Request) {
-// 	m.handleAboutCalled = true
-// 	w.WriteHeader(http.StatusOK)
-// }
+func (m *MockHandler) SubmitLogin(w http.ResponseWriter, r *http.Request) {
+	m.Called(w, r)
+}
 
-// func (m *mockHandler) HandleAllTasks(w http.ResponseWriter, r *http.Request) {
-// 	m.handleAllTasksCalled = true
-// 	w.WriteHeader(http.StatusOK)
-// }
+func (m *MockHandler) RenderRegister(w http.ResponseWriter, r *http.Request) {
+	m.Called(w, r)
+}
 
-// func (m *mockHandler) RenderRegister(w http.ResponseWriter, r *http.Request) {
-// 	m.renderRegisterCalled = true
-// 	w.WriteHeader(http.StatusOK)
-// }
+func (m *MockHandler) SubmitRegister(w http.ResponseWriter, r *http.Request) {
+	m.Called(w, r)
+}
 
-// func (m *mockHandler)SubmitRegister(w http.ResponseWriter, r *http.Request) {
-// 	m.submitRegisterCalled = true
-// 	w.WriteHeader(http.StatusOK)
-// }
+func (m *MockHandler) HandleProtected(w http.ResponseWriter, r *http.Request, handlerFunc func(http.ResponseWriter, *http.Request)) {
+	m.Called(w, r, handlerFunc)
+	handlerFunc(w, r)
+}
 
-// func (m *mockHandler) SubmitCreate(w http.ResponseWriter, r *http.Request) {
-// 	m.submitRegisterCalled = true
-// 	w.WriteHeader(http.StatusOK)
-// }
+func (m *MockHandler) HandleDashboard(w http.ResponseWriter, r *http.Request) {
+	m.Called(w, r)
+}
 
-// func (m *mockHandler) SubmitLogin(w http.ResponseWriter, r *http.Request) {
-// 	m.submitLoginCalled = true
-// 	w.WriteHeader(http.StatusOK)
-// }
+func (m *MockHandler) HandleAbout(w http.ResponseWriter, r *http.Request) {
+	m.Called(w, r)
+}
 
-// func (m *mockHandler) RenderDashboard(w http.ResponseWriter, r *http.Request) {
-// 	m.renderDashboardCalled = true
-// 	w.WriteHeader(http.StatusOK)
-// }
+func (m *MockHandler) RenderCreate(w http.ResponseWriter, r *http.Request) {
+	m.Called(w, r)
+}
 
-// func (m *mockHandler) RenderCreate(w http.ResponseWriter, r *http.Request) {
-// 	m.renderCreateCalled = true
-// 	w.WriteHeader(http.StatusOK)
-// }
+func (m *MockHandler) SubmitCreate(w http.ResponseWriter, r *http.Request) {
+	m.Called(w, r)
+}
 
-// func (m *mockHandler) DeleteTask(w http.ResponseWriter, r *http.Request, id string) {
-// 	m.deleteTaskCalled = true
-// 	w.WriteHeader(http.StatusOK)
-// }
+func (m *MockHandler) HandleLogout(w http.ResponseWriter, r *http.Request) {
+	m.Called(w, r)
+}
 
-// func (m *mockHandler) DoneTask(w http.ResponseWriter, r *http.Request, id string) {
-// 	m.doneTaskCalled = true
-// 	w.WriteHeader(http.StatusOK)
-// }
+func (m *MockHandler) HandleAllTasks(w http.ResponseWriter, r *http.Request) {
+	m.Called(w, r)
+}
 
-// func (m *mockHandler) GetTask(w http.ResponseWriter, r *http.Request, id string) {
-// 	m.getTaskCalled = true
-// 	m.gotId = id
-// 	w.WriteHeader(http.StatusOK)
-// }
+func (m *MockHandler) GetTask(w http.ResponseWriter, r *http.Request, id string) {
+	m.Called(w, r, id)
+}
 
-// func (m *mockHandler) HandleProtected(w http.ResponseWriter, r *http.Request, f func(http.ResponseWriter, *http.Request)) {
-// 	m.handleProtectedCalled = true
-// 	w.WriteHeader(http.StatusOK)
-// }
+func (m *MockHandler) DoneTask(w http.ResponseWriter, r *http.Request, id string) {
+	m.Called(w, r, id)
+}
 
-// func TestNewRouter(t *testing.T) {
-// 	mock := &mockHandler{}
-// 	router := api.NewRouter(mock)
+func (m *MockHandler) UpdateTask(w http.ResponseWriter, r *http.Request, id string) {
+	m.Called(w, r, id)
+}
 
-// 	t.Run("GET /tasks/create calls RenderCreateTask", func(t *testing.T) {
-// 		req := httptest.NewRequest(http.MethodPost, "/tasks", nil)
-// 		rec := httptest.NewRecorder()
+func (m *MockHandler) DeleteTask(w http.ResponseWriter, r *http.Request, id string) {
+	m.Called(w, r, id)
+}
 
-// 		router.ServeHTTP(rec, req)
+func TestDashboardRoute(t *testing.T) {
+	mockHandler := new(MockHandler)
+	router := api.NewRouter(mockHandler)
 
-// 		if !mock.submitCreateCalled {
-// 			t.Errorf("RenderCreateTask was not called")
-// 		}
-// 		if rec.Code != http.StatusCreated {
-// 			t.Errorf("expected status 201, got %d", rec.Code)
-// 		}
-// 	})
+	mockHandler.On("HandleProtected", mock.Anything, mock.Anything, mock.Anything).Maybe().Run(func(args mock.Arguments) {
+		fn := args.Get(2).(func(http.ResponseWriter, *http.Request))
+		fn(args.Get(0).(http.ResponseWriter), args.Get(1).(*http.Request))
+	})
+	mockHandler.On("HandleDashboard", mock.Anything, mock.Anything).Maybe()
 
-// 	t.Run("POST /tasks/create calls SubmitCreateTask", func(t *testing.T) {
-// 		req := httptest.NewRequest(http.MethodPost, "/tasks", nil)
-// 		rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/dashboard", nil)
+	rec := httptest.NewRecorder()
 
-// 		router.ServeHTTP(rec, req)
+	router.ServeHTTP(rec, req)
 
-// 		if !mock.submitCreateCalled {
-// 			t.Errorf("SubmitCreateTask was not called")
-// 		}
-// 		if rec.Code != http.StatusCreated {
-// 			t.Errorf("expected status 201, got %d", rec.Code)
-// 		}
-// 	})
+	assert.Equal(t, http.StatusOK, rec.Code)
+	mockHandler.AssertExpectations(t)
+}
 
-// 	t.Run("GET /tasks/123 calls GetTask with correct Id", func(t *testing.T) {
-// 		req := httptest.NewRequest(http.MethodGet, "/tasks/123", nil)
-// 		rec := httptest.NewRecorder()
+func TestNewRouter_Routes(t *testing.T) {
+	mockHandler := new(MockHandler)
+	router := api.NewRouter(mockHandler)
 
-// 		router.ServeHTTP(rec, req)
+	type testCase struct {
+		name       string
+		method     string
+		url        string
+		body       []byte
+		expectFunc func()
+		expectCode int
+	}
 
-// 		if !mock.getTaskCalled {
-// 			t.Errorf("GetTask was not called")
-// 		}
-// 		if mock.gotId != "123" {
-// 			t.Errorf("expected Id '123', got '%s'", mock.gotId)
-// 		}
-// 		if rec.Code != http.StatusOK {
-// 			t.Errorf("expected status 200, got %d", rec.Code)
-// 		}
-// 	})
+	cases := []testCase{
+		{
+			name:   "Home GET",
+			method: http.MethodGet,
+			url:    "/",
+			expectFunc: func() {
+				mockHandler.On("HandleHome", mock.Anything, mock.Anything).Once()
+			},
+			expectCode: http.StatusOK,
+		},
+		{
+			name:   "Login POST",
+			method: http.MethodPost,
+			url:    "/login",
+			expectFunc: func() {
+				mockHandler.On("SubmitLogin", mock.Anything, mock.Anything).Once()
+			},
+			expectCode: http.StatusOK,
+		},
+		{
+			name:   "Register GET",
+			method: http.MethodGet,
+			url:    "/register",
+			expectFunc: func() {
+				mockHandler.On("RenderRegister", mock.Anything, mock.Anything).Once()
+			},
+			expectCode: http.StatusOK,
+		},
+		{
+			name:   "Task Done POST",
+			method: http.MethodPost,
+			url:    "/task/done/456",
+			body:   mustJSON(map[string]bool{"checked": true}),
+			expectFunc: func() {
+				mockHandler.On("DoneTask", mock.Anything, mock.Anything, "456").Once()
+			},
+			expectCode: http.StatusOK,
+		},
+		{
+			name:   "Logout GET",
+			method: http.MethodGet,
+			url:    "/logout",
+			expectFunc: func() {
+				mockHandler.On("HandleLogout", mock.Anything, mock.Anything).Once()
+			},
+			expectCode: http.StatusOK,
+		},
+		
+	}
 
-// 	t.Run("GET /tasks returns 405", func(t *testing.T) {
-// 		req := httptest.NewRequest(http.MethodGet, "/tasks", nil)
-// 		rec := httptest.NewRecorder()
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			rec := httptest.NewRecorder()
+			var req *http.Request
+			if tc.body != nil {
+				req = httptest.NewRequest(tc.method, tc.url, bytes.NewReader(tc.body))
+			} else {
+				req = httptest.NewRequest(tc.method, tc.url, nil)
+			}
 
-// 		router.ServeHTTP(rec, req)
+			tc.expectFunc()
 
-// 		if rec.Code != http.StatusMethodNotAllowed {
-// 			t.Errorf("expected status 405, got %d", rec.Code)
-// 		}
-// 	})
+			router.ServeHTTP(rec, req)
 
-// 	t.Run("POST /tasks/123 returns 405", func(t *testing.T) {
-// 		req := httptest.NewRequest(http.MethodPost, "/tasks/123", nil)
-// 		rec := httptest.NewRecorder()
+			assert.Equal(t, tc.expectCode, rec.Code)
+			mockHandler.AssertExpectations(t)
+		})
+	}
+}
 
-// 		router.ServeHTTP(rec, req)
-
-// 		if rec.Code != http.StatusMethodNotAllowed {
-// 			t.Errorf("expected status 405, got %d", rec.Code)
-// 		}
-// 	})
-// }
+func mustJSON(v any) []byte {
+	b, err := json.Marshal(v)
+	if err != nil {
+		panic(err)
+	}
+	return b
+}

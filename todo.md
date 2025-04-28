@@ -1,8 +1,34 @@
-- `handlers_test.go` uses testify. Elsewhere, e.g. `router_test.go`, testify is not used. Decide on a consistent system. Less dependencies is good, but testify might make the code clearer due to its more declarative style.
-- Add more checking around task status to ensure done is converted correctly and never set to an anomalous value.
+# Todo
+
+## Security
+
 - Sanitize all inputs and restrict their size.
-- More thought-out and consistent error handling. Consider when to panic and what to log, and in what consistent format.
+  - In particular, prevent passwords larget than 72 bytes, bycrypt's limit. (See the comment in `SubmitRegister` in `handlers.go`).
+- Switch to gorilla/mux for a simple way to do more secure route parsing rather than just using `TrimPrefix` to extract ids. I'm parsing the suffix to an int; that's some validation, but consider risks associated with malicious routes.
+- Implement rate limiting.
+- Limit number of users and number of tasks per user.
+- Set cookie's `Secure` field value to `true` in production.
+- Implement password reset in production.
+- Likewise 2FA.
+
+## Tests
+
+- Finish writing tests for handlers, router, and database store methods. Consider what else can be tested.
+- Resolve any inconsistencies in testing style, e.g. when to use testify. Less dependencies is good, but testify might make the code clearer due to its more declarative style.
+
+## Error handling
+
+- Ensure that error handling is consistent.
+- Consider when to panic and what to log, and in what format.
 - Have an error page template to gracefully display error messages that the user in the name.
-- Be more consistent about `task` versus `tasks`, especially in names of routes.
-- General refactor: see what can be simplified.
+- Add more checking around task status to ensure done is converted correctly and never set to an anomalous value.
+
+## Naming
+
+- Be more consistent about names, e.g. `task` versus `tasks`. Consider especially at names of routes (and look up conventions regarding these) and names of handler functions: be more consistent, e.g. about when "Task" is included in the name.
+
+## Refactor
+
+- See what can be simplified.
 - At the moment, handlers are wrapped in `HandleProtected` only if they don't have another argument besides the response writer and request; otherwise, they check authorization themselves. This could be done more consistently or at least without the repetition.
+- Split up large files.
