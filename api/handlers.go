@@ -36,6 +36,7 @@ type Handler interface {
     RenderCreate(http.ResponseWriter, *http.Request)
     SubmitCreate(http.ResponseWriter, *http.Request)
     GetTask(http.ResponseWriter, *http.Request, string)
+    DoneTask(http.ResponseWriter, *http.Request, string)
     HandleDashboard(http.ResponseWriter, *http.Request)
     HandleHome(http.ResponseWriter, *http.Request)
     HandleProtected(http.ResponseWriter, *http.Request, func(http.ResponseWriter, *http.Request))
@@ -447,6 +448,36 @@ func (h *RealHandler) DeleteTask(w http.ResponseWriter, r *http.Request, id stri
     }
 
     err = h.store.DeleteTask(i)
+    if err != nil {
+        http.Error(w, "not found", http.StatusNotFound)
+        return
+    }
+
+    http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+}
+
+func (h *RealHandler) DoneTask(w http.ResponseWriter, r *http.Request, id string) {
+    cookie, err := r.Cookie("session_token")
+    if err != nil {
+        log.Println("Error getting cookie: ", err)
+        http.Redirect(w, r, "/login", http.StatusSeeOther)
+        return
+    }
+
+    _, err = h.store.GetUserIdFromSessionToken(cookie.Value)
+    if err != nil {
+        log.Println("Error getting user id: ", err)
+        http.Redirect(w, r, "/login", http.StatusSeeOther)
+        return
+    }
+
+    i, err := strconv.Atoi(id)
+    if err != nil {
+        http.Error(w, "invalid Id", http.StatusBadRequest)
+        return
+    }
+
+    err = h.store.SetTaskDone(i)
     if err != nil {
         http.Error(w, "not found", http.StatusNotFound)
         return

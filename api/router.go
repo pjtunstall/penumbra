@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"net/http"
 	"strings"
 )
@@ -79,6 +80,31 @@ func NewRouter(h Handler) http.Handler {
             http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
         }
     })
+
+    mux.HandleFunc("/task/done/", func(w http.ResponseWriter, r *http.Request) {
+        id := strings.TrimPrefix(r.URL.Path, "/task/done/")
+    
+        if r.Method == http.MethodPost {
+            var requestBody struct {
+                Checked bool `json:"checked"`
+            }
+    
+            if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+                http.Error(w, "Invalid request body", http.StatusBadRequest)
+                return
+            }
+
+            if !requestBody.Checked {
+                return
+            }
+    
+            h.DoneTask(w, r, id)
+            return
+        }
+    
+        http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+    })
+    
     
     mux.HandleFunc("/tasks/update/", func(w http.ResponseWriter, r *http.Request) {
         id := strings.TrimPrefix(r.URL.Path, "/tasks/update/")

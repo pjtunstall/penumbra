@@ -4,11 +4,7 @@
     <!-- head -->
     <thead>
       <tr>
-        <th>
-          <label>
-            <input id="select-all" type="checkbox" class="checkbox" />
-          </label>
-        </th>
+        <th>Done?</th>
         <th>Title</th>
         <th>Status</th>
         <th>Due</th>
@@ -30,7 +26,8 @@
       <tr class="hover:bg-base-300">
         <th>
           <label>
-            <input type="checkbox" class="checkbox row-checkbox" />
+            <input type="checkbox" class="checkbox row-checkbox"
+            data-id="{{.Id}}" {{if eq .Status "done"}}checked{{end}} />
           </label>
         </th>
         <td>
@@ -53,29 +50,29 @@
 </div>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const thead = document.querySelector("thead");
-    const rows = document.querySelectorAll("tbody tr");
+  document.querySelectorAll(".row-checkbox").forEach(function (checkbox) {
+    checkbox.addEventListener("change", function () {
+      if (!this.checked) {
+        this.checked = true;
+      }
 
-    thead.addEventListener("mouseenter", () => {
-      rows.forEach((row) => row.classList.add("bg-base-300"));
-    });
+      const id = this.getAttribute("data-id");
 
-    thead.addEventListener("mouseleave", () => {
-      rows.forEach((row) => row.classList.remove("bg-base-300"));
-    });
-  });
-</script>
-
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const selectAllCheckbox = document.getElementById("select-all");
-
-    selectAllCheckbox.addEventListener("change", function () {
-      const rowCheckboxes = document.querySelectorAll(".row-checkbox");
-      rowCheckboxes.forEach((cb) => {
-        cb.checked = selectAllCheckbox.checked;
-      });
+      fetch("/task/done/" + id, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ checked: this.checked }),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            console.error("Request failed.");
+          }
+        })
+        .catch((error) => {
+          console.error("Network error:", error);
+        });
     });
   });
 </script>

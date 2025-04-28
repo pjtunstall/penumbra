@@ -17,6 +17,7 @@ type Store interface {
     AddSessionToken(user_id int) (string, time.Time, error)
     GetUserIdFromSessionToken(sessionToken string) (int, error)
     GetTaskById(id int) (app.Task, error)
+    SetTaskDone(id int) error
     GetUserByEmail(email string) (app.User, error)
     GetAllTasks(user_id int) ([]app.Task, error)
     SubmitCreate(task app.Task) (int, error)
@@ -147,5 +148,10 @@ func (s *SQLiteStore) DeleteTask(id int) error {
 func (s *SQLiteStore) UpdateTask(t app.Task) error {
     _, err := s.db.Exec(`UPDATE tasks SET title = ?, description = ?, done = ?, due = ? WHERE id = ?`,
         t.Title, t.Description, t.Done, t.Due, t.Id)
+    return err
+}
+
+func (s *SQLiteStore) SetTaskDone(id int) error {
+    _, err := s.db.Exec(`UPDATE tasks SET done = 1 WHERE id = ?`, id)
     return err
 }
