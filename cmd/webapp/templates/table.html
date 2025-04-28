@@ -3,7 +3,7 @@
   <table class="table">
     <!-- head -->
     <thead>
-      <tr onclick="window.location='/tasks';" style="cursor: pointer">
+      <tr>
         <th>
           <label>
             <input id="select-all" type="checkbox" class="checkbox" />
@@ -13,6 +13,15 @@
         <th>Status</th>
         <th>Due</th>
         <th></th>
+        <th class="hover:bg-base-300">
+          <a
+            href="/tasks"
+            class="btn btn-ghost rounded-field"
+            style="cursor: pointer"
+          >
+            View All
+          </a>
+        </th>
       </tr>
     </thead>
     <!-- body -->
