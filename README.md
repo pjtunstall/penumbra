@@ -20,3 +20,18 @@ To initialize a database, compile the dbinit binary with `go build -o dbinit cmd
 Then to build and run the app in one step, run `go run cmd/webapp/main.go` (assuming your working directory is the project root). Open a web browser and navigate to `http://localhost:8080`.
 
 To run all tests, run `go test ./...`.
+
+### Routes
+
+- `/`
+- `login`
+- `/register`
+- `/dashboard`
+- `/logout`
+- `/about`
+- `/tasks`
+- `/tasks/create`
+- `/task/{id}`
+- `/task/delete/{id}`
+- `/task/done/{id}`
+- `/task/update/{id}`

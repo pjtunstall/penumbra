@@ -31,7 +31,7 @@
           </label>
         </th>
         <td>
-          <a href="/task/{{.Id}}">
+          <a href="/tasks/{{.Id}}">
             <div class="flex items-center gap-3">
               <div>
                 <div class="font-bold">{{.Title}}</div>
@@ -68,6 +68,12 @@
         .then((response) => {
           if (!response.ok) {
             console.error("Request failed.");
+          } else {
+            const statusCell =
+              this.closest("tr").querySelector("td:nth-child(3)");
+            if (statusCell) {
+              statusCell.textContent = "done";
+            }
           }
         })
         .catch((error) => {

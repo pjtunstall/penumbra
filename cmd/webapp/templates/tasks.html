@@ -3,14 +3,14 @@
   {{range .Data}}
   <li class="list-row hover:bg-base-300">
     <div class="flex flex-col gap-1 text-lg">
-      <a href="/task/{{.Id}}" class="font-bold"> {{.Title}} </a>
+      <a href="/tasks/{{.Id}}" class="font-bold"> {{.Title}} </a>
 
-      <a href="/task/{{.Id}}" class="text-sm">
+      <a href="/tasks/{{.Id}}" class="text-sm">
         {{if eq .Status "done"}}done{{else}}{{.Status}}: {{.DuePretty}}{{end}}
       </div>
       </a>
 
-      <a href="/task/{{.Id}}" class="text-xs">{{.Description}}</a>
+      <a href="/tasks/{{.Id}}" class="text-xs">{{.Description}}</a>
     </div>
   </li>
   {{end}}

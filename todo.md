@@ -1,5 +1,9 @@
 # Todo
 
+## Fix
+
+- Update task's disp;ayed status when it's checked off.
+
 ## Security
 
 - Sanitize all inputs and restrict their size.
