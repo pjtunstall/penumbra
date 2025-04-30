@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"dts/api"
+	"penumbra/api"
 )
 
 type MockHandler struct {

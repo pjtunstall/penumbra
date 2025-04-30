@@ -1,4 +1,4 @@
-module dts
+module penumbra
 
 go 1.24.0
 

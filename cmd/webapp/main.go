@@ -6,8 +6,8 @@ import (
 	"log"
 	"net/http"
 
-	"dts/api"
-	"dts/db"
+	"penumbra/api"
+	"penumbra/db"
 )
 
 //go:embed templates/*

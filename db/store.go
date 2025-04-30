@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"dts/app"
+	"penumbra/app"
 
 	_ "github.com/glebarez/go-sqlite"
 	"github.com/google/uuid"

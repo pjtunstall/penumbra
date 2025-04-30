@@ -11,8 +11,8 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"dts/app"
-	"dts/db"
+	"penumbra/app"
+	"penumbra/db"
 )
 
 type PageAndOtherData struct {

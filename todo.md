@@ -1,12 +1,12 @@
 # Todo
 
-## Fix
+## Features
 
-- Update task's disp;ayed status when it's checked off.
+- Add ability to uncheck a task in case it was accidentally marked as done.
 
 ## Security
 
-- Sanitize all inputs and restrict their size.
+- Check that all inputs are sanitized and restrict their size. They go safely into the databse, so just make sure no input is inserted directly into the HTML.
   - In particular, prevent passwords larget than 72 bytes, bycrypt's limit. (See the comment in `SubmitRegister` in `handlers.go`).
 - Switch to gorilla/mux for a simple way to do more secure route parsing rather than just using `TrimPrefix` to extract ids. I'm parsing the suffix to an int; that's some validation, but consider risks associated with malicious routes.
 - Implement rate limiting.
@@ -30,7 +30,9 @@
 
 ## Naming
 
-- Be more consistent about names, e.g. `task` versus `tasks`. Consider especially at names of routes (and look up conventions regarding these) and names of handler functions: be more consistent, e.g. about when "Task" is included in the name.
+- Switch to REST API conventions for naming routes.
+- Use a prefix like `/v1/` to indicate versioning.
+- Review names of handlers for consistency and clarity.
 
 ## Refactor
 
