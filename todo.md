@@ -7,7 +7,7 @@
 ## Security
 
 - Check that all inputs are sanitized and restrict their size. They go safely into the databse, so just make sure no input is inserted directly into the HTML.
-  - In particular, prevent passwords larget than 72 bytes, bycrypt's limit. (See the comment in `SubmitRegister` in `handlers.go`).
+  - In particular, prevent passwords larget than 72 bytes, bycrypt's limit. (See the comment in `SubmitRegister` in `handlers.go`). Limit the size of task names and descriptions, user names, and emails. Verify email format. In production, emails would also need verifying by sending a confirmation code.
 - Switch to gorilla/mux for a simple way to do more secure route parsing rather than just using `TrimPrefix` to extract ids. I'm parsing the suffix to an int; that's some validation, but consider risks associated with malicious routes.
 - Implement rate limiting.
 - Limit number of users and number of tasks per user.
@@ -39,3 +39,7 @@
 - See what can be simplified.
 - At the moment, handlers are wrapped in `HandleProtected` only if they don't have another argument besides the response writer and request; otherwise, they check authorization themselves. This could be done more consistently or at least without the repetition.
 - Split up large files.
+
+## Cosmetic
+
+- Put a little bit more vertical gap between form fields.
