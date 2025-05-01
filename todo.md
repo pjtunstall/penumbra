@@ -2,7 +2,10 @@
 
 ## Features
 
+- Add an `openapi.yaml` file.
 - Add ability to uncheck a task in case it was accidentally marked as done.
+- Have client notify the user when a deadline is close.
+- Cache fetched tasks in memory and update status when a deadline passes. Let client be the one to derive whether a task is overdue; currently the server computes it from due data and current time before sending task data to the client. Be sure to synchronize time between server and client.
 
 ## Security
 
@@ -31,7 +34,6 @@
 
 ## Naming
 
-- Switch to REST API conventions for naming routes.
 - Use a prefix like `/v1/` to indicate versioning.
 - Review names of handlers for consistency and clarity.
 
