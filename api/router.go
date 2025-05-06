@@ -1,10 +1,35 @@
 package api
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
 	"strings"
 )
+
+func withCSP(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        w.Header().Set("Content-Security-Policy", 
+            "default-src 'self'; " +
+            "script-src 'self' https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4 https://cdn.jsdelivr.net/npm/pikaday/pikaday.js; " +
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net/npm/daisyui@5 https://cdn.jsdelivr.net/npm/daisyui@5/themes.css; " +
+            "img-src 'self' data:; " +
+            "object-src 'none'; " +
+            "base-uri 'none'; " +
+            "frame-ancestors 'none';")
+        next.ServeHTTP(w, r)
+    })
+}
+
+func GenerateNonce() string {
+	nonce := make([]byte, 16)
+	_, err := rand.Read(nonce)
+	if err != nil {
+		panic(err)
+	}
+	return base64.StdEncoding.EncodeToString(nonce)
+}
 
 func NewRouter(h Handler) http.Handler {
     mux := http.NewServeMux()
@@ -132,5 +157,5 @@ func NewRouter(h Handler) http.Handler {
         }
     })
 
-    return mux
+    return withCSP(mux)
 }

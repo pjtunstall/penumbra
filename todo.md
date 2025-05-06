@@ -1,5 +1,9 @@
 # Todo
 
+# Fix
+
+Why does it only offer a few days at the end of April still? I need a general date picker.
+
 ## Features
 
 - Add an `openapi.yaml` file.
@@ -10,6 +14,7 @@
 ## Security
 
 - Switch to using UUIDs for task and user ids, rather than incrementing an int.
+- Install Tailwind and DaisyUI locally. Write a small custom CSS entry file. Run the Tailwind compiler (with DaisyUI plugin) to generate a single `.css` file. Serve that file from your server (covered by 'self' in the CSP).
 - Check that all inputs are sanitized and restrict their size. They go safely into the databse, so just make sure no input is inserted directly into the HTML.
   - In particular, prevent passwords larget than 72 bytes, bycrypt's limit. (See the comment in `SubmitRegister` in `handlers.go`). Limit the size of task names and descriptions, user names, and emails. Verify email format. In production, emails would also need verifying by sending a confirmation code.
 - Switch to gorilla/mux for a simple way to do more secure route parsing rather than just using `TrimPrefix` to extract ids. I'm parsing the suffix to an int; that's some validation, but consider risks associated with malicious routes.
