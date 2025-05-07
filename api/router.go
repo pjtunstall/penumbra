@@ -12,7 +12,7 @@ func withCSP(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
         w.Header().Set("Content-Security-Policy", 
             "default-src 'self'; " +
-            "script-src 'self' https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4 https://cdn.jsdelivr.net/npm/pikaday/pikaday.js; " +
+            "script-src 'self' https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4 https://unpkg.com/cally; " +
             "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net/npm/daisyui@5 https://cdn.jsdelivr.net/npm/daisyui@5/themes.css; " +
             "img-src 'self' data:; " +
             "object-src 'none'; " +
@@ -33,6 +33,9 @@ func GenerateNonce() string {
 
 func NewRouter(h Handler) http.Handler {
     mux := http.NewServeMux()
+
+    fs := http.FileServer(http.Dir("cmd/webapp/js"))
+    mux.Handle("/js/", http.StripPrefix("/js/", fs))
 
     mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
         if r.Method == http.MethodGet {

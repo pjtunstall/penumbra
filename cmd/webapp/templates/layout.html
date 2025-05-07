@@ -21,8 +21,6 @@
       rel="stylesheet"
       type="text/css"
     />
-
-    <script src="https://cdn.jsdelivr.net/npm/pikaday/pikaday.js"></script>
   </head>
 
   <body class="min-h-screen bg-base-200 text-base-content">
@@ -32,8 +30,9 @@
     "create"}} {{else if eq .Page "task"}} {{template "task" .Data}} {{else if
     eq .Page "tasks"}} {{template "tasks" .}} {{else if eq .Page "about"}}
     {{template "about"}} {{end}}
+
+    <script type="module" src="https://unpkg.com/cally"></script>
+    <script src="/js/check.js"></script>
   </body>
 </html>
 {{ end }}
-
-<script src="/js/script.js"></script>

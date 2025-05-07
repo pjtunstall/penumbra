@@ -1,9 +1,5 @@
 # Todo
 
-# Fix
-
-Why does it only offer a few days at the end of April still? I need a general date picker.
-
 ## Features
 
 - Add an `openapi.yaml` file.

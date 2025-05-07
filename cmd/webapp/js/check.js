@@ -1,7 +1,3 @@
-const picker = new Pikaday({
-  field: document.getElementById("myDatepicker"),
-});
-
 document.querySelectorAll(".row-checkbox").forEach(function (checkbox) {
   checkbox.addEventListener("change", function () {
     if (!this.checked) {
