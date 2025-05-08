@@ -10,6 +10,7 @@ import (
 
 	_ "github.com/glebarez/go-sqlite"
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Store interface {
@@ -64,8 +65,10 @@ func panicIfTablesDoNotExist(db *sql.DB) {
 }
 
 func (s *SQLiteStore) CreateUser(user app.User) error {
-    _, err := s.db.Exec(`INSERT INTO users (name, password_hash, email, phone) VALUES (?, ?, ?, ?)`,
-        user.Name, user.PasswordHash, user.Email, user.Phone)
+    _, err := s.db.Exec(`
+    INSERT INTO users (name, password_hash, email, phone, session_token_hash, session_expires_at)
+    VALUES (?, ?, ?, ?, '', ?)`,
+    user.Name, user.PasswordHash, user.Email, user.Phone, time.Unix(0, 0))
     return err
 }
 
@@ -80,9 +83,14 @@ func (s *SQLiteStore) AddSessionToken(user_id int) (string, time.Time, error) {
     sessionToken := uuid.NewString()
     expiresAt := time.Now().Add(24 * time.Hour)
 
-	_, err := s.db.Exec(`
-        UPDATE users SET session_token = ?, session_expires_at = ? WHERE id = ?
-    `, sessionToken, expiresAt, user_id)
+    sessionTokenHash, err := bcrypt.GenerateFromPassword([]byte(sessionToken), 10)
+    if err != nil {
+        return "", time.Time{}, err
+    }
+
+	_, err = s.db.Exec(`
+        UPDATE users SET session_token_hash = ?, session_expires_at = ? WHERE id = ?
+    `, sessionTokenHash, expiresAt, user_id)
     if err != nil {
         return "", time.Time{}, err
     }
@@ -95,17 +103,34 @@ func (s *SQLiteStore) GetUserIdFromSessionToken(sessionToken string) (int, error
         return 0, errors.New("session token is empty")
     }
 
-    var userId int
-    var sessionExpiresAt time.Time
+    rows, err := s.db.Query(`SELECT id, session_token_hash, session_expires_at FROM users`)
+    if err != nil {
+        return 0, err
+    }
+    defer rows.Close()
 
-    err := s.db.QueryRow(`SELECT id, session_expires_at FROM users WHERE session_token = ?`, sessionToken).
-        Scan(&userId, &sessionExpiresAt)
+    for rows.Next() {
+        var userId int
+        var hash sql.NullString
+        var expiresAt time.Time
 
-    if time.Now().After(sessionExpiresAt) {
-        return 0, errors.New("session token has expired")
+        if err := rows.Scan(&userId, &hash, &expiresAt); err != nil {
+            return 0, err
+        }
+
+        if !hash.Valid {
+            continue // Skip users with no session token.
+        }
+
+        if err := bcrypt.CompareHashAndPassword([]byte(hash.String), []byte(sessionToken)); err == nil {
+            if time.Now().After(expiresAt) {
+                return 0, errors.New("session token has expired")
+            }
+            return userId, nil
+        }
     }
 
-    return userId, err
+    return 0, errors.New("session token not found")
 }
 
 func (s *SQLiteStore) SubmitCreate(t app.Task) (int, error) {

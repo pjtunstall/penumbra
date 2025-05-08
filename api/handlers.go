@@ -141,15 +141,19 @@ func (h *RealHandler) SubmitLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *RealHandler) SubmitRegister(w http.ResponseWriter, r *http.Request) {
-    log.Println("SubmitRegister")
     err := r.ParseForm()
     if err != nil {
         http.Error(w, "Bad Request", http.StatusBadRequest)
         return
     }
 
-    // todo: prevent passwords larget than 72 bytes, bycrypt's limit
-    password_hash, err := bcrypt.GenerateFromPassword([]byte(r.FormValue("password")), 10)
+    password := r.FormValue("password")
+    if len(password) > 72 {
+        http.Error(w, "Password too long", http.StatusBadRequest)
+        return
+    }
+
+    password_hash, err := bcrypt.GenerateFromPassword([]byte(password), 10)
     if err != nil {
         http.Error(w, "Internal Server Error: "+err.Error(), http.StatusInternalServerError)
         return
@@ -181,7 +185,7 @@ func (h *RealHandler) HandleDashboard(w http.ResponseWriter, r *http.Request) {
 
     user_id, err := h.store.GetUserIdFromSessionToken(cookie.Value)
     if err != nil {
-        log.Println("Error getting user id: ", err)
+        log.Println("Error getting user id from hashed session token: ", err)
         http.Redirect(w, r, "/login", http.StatusSeeOther)
         return
     }
@@ -217,7 +221,6 @@ func (h *RealHandler) RenderCreate(w http.ResponseWriter, r *http.Request) {
         http.Redirect(w, r, "/login", http.StatusSeeOther)
         return
     }
-
     _, err = h.store.GetUserIdFromSessionToken(cookie.Value)
     if err != nil {
         log.Println("Error getting user id: ", err)

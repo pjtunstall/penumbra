@@ -4,6 +4,6 @@ CREATE TABLE IF NOT EXISTS users (
   email TEXT UNIQUE NOT NULL,
   phone TEXT NOT NULL,
   password_hash BLOB NOT NULL,
-  session_token TEXT UNIQUE,
+  session_token_hash TEXT UNIQUE,
   session_expires_at DATETIME
 );
