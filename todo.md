@@ -45,7 +45,7 @@
 ## Refactor
 
 - See what can be simplified.
-- At the moment, handlers are wrapped in `HandleProtected` only if they don't have another argument besides the response writer and request; otherwise, they check authorization themselves. This could be done more consistently or at least without the repetition.
+- Make auth drier: at the moment, handlers are wrapped in `HandleProtected` only if they don't have another argument besides the response writer and request; otherwise, they check authorization themselves. This could be done more consistently or at least without the repetition. Could this be accomplished with generics? An interface defined as functions of the currently accepted signature plus any other signatures I need?
 - Split up large files.
 
 ## Cosmetic
