@@ -1,9 +1,5 @@
 # Todo
 
-## Fix
-
-- New tasks are now being created at the start of the day, It should be the end.
-
 ## Features
 
 - Add an `openapi.yaml` file.

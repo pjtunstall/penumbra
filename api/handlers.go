@@ -412,18 +412,20 @@ func (h *RealHandler) UpdateTask(w http.ResponseWriter, r *http.Request, id stri
     status := r.FormValue("status")
     description := r.FormValue("description")
     due := r.FormValue("due")
-    parsedDueDate, err := time.Parse("Mon Jan 2 2006", due)
+    dueDate, err := time.Parse("Mon Jan 2 2006", due)
 	if err != nil {
 		http.Error(w, "Invalid date format", http.StatusBadRequest)
 		return
 	}
+
+    dueDate = time.Date(dueDate.Year(), dueDate.Month(), dueDate.Day(), 23, 59, 59, 999999999, dueDate.Location())
 
     updatedTask := app.Task{
         Id:          idInt,
         Title:       title,
         Status:      status,
         Description: description,
-        Due:         parsedDueDate,
+        Due:         dueDate,
     }
 
     err = h.store.UpdateTask(updatedTask)
