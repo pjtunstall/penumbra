@@ -154,8 +154,16 @@ func TestNewRouter_Routes(t *testing.T) {
 			url:    "/tasks/done/123e4567-e89b-12d3-a456-426614174000",
 			body:   mustJSON(map[string]bool{"checked": true}),
 			expectFunc: func() {
-				id := uuid.MustParse("123e4567-e89b-12d3-a456-426614174000")
-				mockHandler.On("DoneTask", mock.Anything, mock.Anything, id).Once()
+				id := "123e4567-e89b-12d3-a456-426614174000"
+				mockHandler.On(
+					"HandleProtectedWithId",
+					mock.Anything,
+					mock.Anything,
+					mock.AnythingOfType("func(http.ResponseWriter, *http.Request, uuid.UUID)"),
+					id,
+				).Once()
+			
+				mockHandler.On("DoneTask", mock.Anything, mock.Anything, uuid.MustParse(id)).Once()
 			},
 			expectCode: http.StatusOK,
 		},			

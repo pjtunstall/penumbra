@@ -6,8 +6,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
-
-	"github.com/google/uuid"
 )
 
 func withCSP(next http.Handler) http.Handler {
@@ -111,27 +109,16 @@ func NewRouter(h Handler) http.Handler {
     })
 
     mux.HandleFunc("/tasks/", func(w http.ResponseWriter, r *http.Request) {
-        prefix := strings.TrimPrefix(r.URL.Path, "/tasks/")
-        id, err := uuid.Parse(prefix)
-        if err != nil {
-            http.Error(w, "not found", http.StatusNotFound)
-            return
-        }
-
+        id := strings.TrimPrefix(r.URL.Path, "/tasks/")
         if r.Method == http.MethodGet {
-            h.GetTask(w, r, id)
+            h.HandleProtectedWithId(w, r, h.GetTask, id)
         } else {
             http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
         }
     })
 
     mux.HandleFunc("/tasks/done/", func(w http.ResponseWriter, r *http.Request) {
-        prefix := strings.TrimPrefix(r.URL.Path, "/tasks/done/")
-        id, err := uuid.Parse(prefix)
-        if err != nil {
-            http.Error(w, "not found", http.StatusNotFound)
-            return
-        }
+        id := strings.TrimPrefix(r.URL.Path, "/tasks/done/")
     
         if r.Method == http.MethodPost {
             var requestBody struct {
@@ -147,7 +134,7 @@ func NewRouter(h Handler) http.Handler {
                 return
             }
     
-            h.DoneTask(w, r, id)
+            h.HandleProtectedWithId(w, r, h.DoneTask, id)
             return
         }
     
@@ -156,30 +143,18 @@ func NewRouter(h Handler) http.Handler {
     
     
     mux.HandleFunc("/tasks/update/", func(w http.ResponseWriter, r *http.Request) {
-        prefix := strings.TrimPrefix(r.URL.Path, "/tasks/update/")
-        id, err := uuid.Parse(prefix)
-        if err != nil {
-            http.Error(w, "not found", http.StatusNotFound)
-            return
-        }
-
+        id := strings.TrimPrefix(r.URL.Path, "/tasks/update/")
         if r.Method == http.MethodPost {
-            h.UpdateTask(w, r, id)
+            h.HandleProtectedWithId(w, r, h.UpdateTask, id)
         } else {
             http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
         }
     })
 
     mux.HandleFunc("/tasks/delete/", func(w http.ResponseWriter, r *http.Request) {
-        prefix := strings.TrimPrefix(r.URL.Path, "/tasks/delete/")
-        id, err := uuid.Parse(prefix)
-        if err != nil {
-            http.Error(w, "not found", http.StatusNotFound)
-            return
-        }
-        
+        id := strings.TrimPrefix(r.URL.Path, "/tasks/delete/")
         if r.Method == http.MethodPost {
-            h.DeleteTask(w, r, id)
+            h.HandleProtectedWithId(w, r, h.DeleteTask, id)
         } else {
             http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
         }
