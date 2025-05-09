@@ -15,6 +15,7 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/google/uuid"
 )
 
 func main() {
@@ -55,6 +56,7 @@ func TestSQLiteStore_CreateAndGetTask(t *testing.T) {
 
 	due := time.Now().Add(24 * time.Hour)
 	task := app.Task{
+		Id:          uuid.NewString(),
 		Title:       "Test Task",
 		UserId:      1,
 		Description: "Testing",
@@ -62,12 +64,12 @@ func TestSQLiteStore_CreateAndGetTask(t *testing.T) {
 		Done:        0,
 	}
 
-	id, err := store.SubmitCreate(task)
+	err := store.UpsertTask(task)
 	if err != nil {
 		t.Fatalf("CreateTask failed: %v", err)
 	}
 
-	got, err := store.GetTaskById(id)
+	got, err := store.GetTaskById(task.Id)
 	if err != nil {
 		t.Fatalf("GetTask failed: %v", err)
 	}

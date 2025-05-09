@@ -1,5 +1,9 @@
 # Todo
 
+## Fix
+
+- Protect database access with `RWMutex`.
+
 ## Features
 
 - Add an `openapi.yaml` file.
@@ -9,7 +13,7 @@
 
 ## Security
 
-- Switch to using UUIDs for task and user ids, rather than incrementing an int.
+- Switch to using UUIDs for task ids, rather than incrementing an int. User ids are ok since they're not exposed to the client.
 - Install Tailwind and DaisyUI locally. Write a small custom CSS entry file. Run the Tailwind compiler (with DaisyUI plugin) to generate a single `.css` file. Serve that file from your server (covered by 'self' in the CSP).
 - Check that all inputs are sanitized and restrict their size. They go safely into the databse, so just make sure no input is inserted directly into the HTML.
   - Limit the size of task names and descriptions, user names, and emails. Verify email format. In production, emails would also need verifying by sending a confirmation code.

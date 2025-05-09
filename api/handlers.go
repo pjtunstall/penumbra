@@ -6,9 +6,9 @@ import (
 	"log"
 	"net/http"
 	"sort"
-	"strconv"
 	"time"
 
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 
 	"penumbra/app"
@@ -21,7 +21,7 @@ type PageAndOtherData struct {
 }
 
 type TaskView struct {
-    Id        int
+    Id        string
     Title     string
     Status    string
     DuePretty string
@@ -29,7 +29,7 @@ type TaskView struct {
 }
 
 func (t TaskView) String() string {
-    return fmt.Sprintf("Task{Id: %d, Title: %s, Description: %s, Status: %s, Due: %s}",
+    return fmt.Sprintf("Task{Id: %s, Title: %s, Description: %s, Status: %s, Due: %s}",
         t.Id, t.Title, t.Description, t.Status, t.DuePretty)
 }
 
@@ -258,13 +258,14 @@ func (h *RealHandler) SubmitCreate(w http.ResponseWriter, r *http.Request) {
     }
 
     task := app.Task{
+        Id:          uuid.NewString(),
         UserId:      user_id,
 		Title:       title,
 		Description: description,
 		Due:         dueDate,
 	}
 
-    _, err = h.store.SubmitCreate(task)
+    err = h.store.UpsertTask(task)
     if err != nil {
         http.Error(w, "failed to create task", http.StatusInternalServerError)
         return
@@ -288,13 +289,7 @@ func (h *RealHandler) GetTask(w http.ResponseWriter, r *http.Request, id string)
         return
     }
 
-    i, err := strconv.Atoi(id)
-    if err != nil {
-        http.Error(w, "invalid Id", http.StatusBadRequest)
-        return
-    }
-
-    task, err := h.store.GetTaskById(i)
+    task, err := h.store.GetTaskById(id)
     if err != nil {
         http.Error(w, "not found", http.StatusNotFound)
         return
@@ -403,11 +398,6 @@ func (h *RealHandler) UpdateTask(w http.ResponseWriter, r *http.Request, id stri
         return
     }
 
-    idInt, err := strconv.Atoi(id)
-    if err != nil {
-        http.Error(w, "invalid Id", http.StatusBadRequest)
-        return
-    }
     title := r.FormValue("title")
     status := r.FormValue("status")
     description := r.FormValue("description")
@@ -421,14 +411,14 @@ func (h *RealHandler) UpdateTask(w http.ResponseWriter, r *http.Request, id stri
     dueDate = time.Date(dueDate.Year(), dueDate.Month(), dueDate.Day(), 23, 59, 59, 999999999, dueDate.Location())
 
     updatedTask := app.Task{
-        Id:          idInt,
+        Id:          id,
         Title:       title,
         Status:      status,
         Description: description,
         Due:         dueDate,
     }
 
-    err = h.store.UpdateTask(updatedTask)
+    err = h.store.UpsertTask(updatedTask)
     if err != nil {
         http.Error(w, "not found", http.StatusNotFound)
         return
@@ -452,13 +442,7 @@ func (h *RealHandler) DeleteTask(w http.ResponseWriter, r *http.Request, id stri
         return
     }
 
-    i, err := strconv.Atoi(id)
-    if err != nil {
-        http.Error(w, "invalid Id", http.StatusBadRequest)
-        return
-    }
-
-    err = h.store.DeleteTask(i)
+    err = h.store.DeleteTask(id)
     if err != nil {
         http.Error(w, "not found", http.StatusNotFound)
         return
@@ -482,13 +466,7 @@ func (h *RealHandler) DoneTask(w http.ResponseWriter, r *http.Request, id string
         return
     }
 
-    i, err := strconv.Atoi(id)
-    if err != nil {
-        http.Error(w, "invalid Id", http.StatusBadRequest)
-        return
-    }
-
-    err = h.store.SetTaskDone(i)
+    err = h.store.SetTaskDone(id)
     if err != nil {
         http.Error(w, "not found", http.StatusNotFound)
         return

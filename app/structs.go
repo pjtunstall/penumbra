@@ -11,13 +11,14 @@ type User struct {
 }
 
 type Task struct {
-    Id          int       `json:"id"`
+    Id          string       `json:"id"`
     UserId      int `json:"userId"`
     Title       string    `json:"title"`
     Description string    `json:"description,omitempty"`
     Status      string    `json:"status"`
     Done        int      `json:"done"`
     Due         time.Time `json:"due"`
+    Uuid        string  `json:"uuid"`
 }
 
 func (t *Task) SetStatus() {

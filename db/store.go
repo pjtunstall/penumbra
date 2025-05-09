@@ -17,13 +17,12 @@ type Store interface {
     CreateUser(user app.User) error
     AddSessionToken(user_id int) (string, time.Time, error)
     GetUserIdFromSessionToken(sessionToken string) (int, error)
-    GetTaskById(id int) (app.Task, error)
-    SetTaskDone(id int) error
+    GetTaskById(id string) (app.Task, error)
+    SetTaskDone(id string) error
     GetUserByEmail(email string) (app.User, error)
     GetAllTasks(user_id int) ([]app.Task, error)
-    SubmitCreate(task app.Task) (int, error)
-    UpdateTask(task app.Task) error
-    DeleteTask(id int) error
+    UpsertTask(task app.Task) error
+    DeleteTask(id string) error
 }
 
 type SQLiteStore struct {
@@ -133,17 +132,7 @@ func (s *SQLiteStore) GetUserIdFromSessionToken(sessionToken string) (int, error
     return 0, errors.New("session token not found")
 }
 
-func (s *SQLiteStore) SubmitCreate(t app.Task) (int, error) {
-    res, err := s.db.Exec(`INSERT INTO tasks (user_id, title, description, done, due) VALUES (?, ?, ?, ?, ?)`,
-        t.UserId, t.Title, t.Description, t.Done, t.Due)
-    if err != nil {
-        return 0, err
-    }
-    id, _ := res.LastInsertId()
-    return int(id), nil
-}
-
-func (s *SQLiteStore) GetTaskById(id int) (app.Task, error) {
+func (s *SQLiteStore) GetTaskById(id string) (app.Task, error) {
     var t app.Task
     err := s.db.QueryRow(`SELECT id, title, description, done, due FROM tasks WHERE id = ?`, id).
         Scan(&t.Id, &t.Title, &t.Description, &t.Done, &t.Due)
@@ -173,18 +162,25 @@ func (s *SQLiteStore) GetAllTasks(user_id int) ([]app.Task, error) {
     return tasks, nil
 }
 
-func (s *SQLiteStore) DeleteTask(id int) error {
+func (s *SQLiteStore) DeleteTask(id string) error {
     _, err := s.db.Exec(`DELETE FROM tasks WHERE id = ?`, id)
     return err
 }
 
-func (s *SQLiteStore) UpdateTask(t app.Task) error {
-    _, err := s.db.Exec(`UPDATE tasks SET title = ?, description = ?, done = ?, due = ? WHERE id = ?`,
-        t.Title, t.Description, t.Done, t.Due, t.Id)
+func (s *SQLiteStore) UpsertTask(t app.Task) error {
+    _, err := s.db.Exec(`
+        INSERT INTO tasks (id, user_id, title, description, done, due)
+        VALUES (?, ?, ?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+            title = excluded.title,
+            description = excluded.description,
+            done = excluded.done,
+            due = excluded.due
+    `, t.Id, t.UserId, t.Title, t.Description, t.Done, t.Due)
     return err
 }
 
-func (s *SQLiteStore) SetTaskDone(id int) error {
+func (s *SQLiteStore) SetTaskDone(id string) error {
     _, err := s.db.Exec(`UPDATE tasks SET done = 1 WHERE id = ?`, id)
     return err
 }
