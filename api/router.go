@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 func withCSP(next http.Handler) http.Handler {
@@ -102,14 +104,20 @@ func NewRouter(h Handler) http.Handler {
 
     mux.HandleFunc("/tasks", func(w http.ResponseWriter, r *http.Request) {
         if r.Method == http.MethodGet {
-            h.HandleAllTasks(w, r)
+            h.HandleProtected(w, r, h.HandleAllTasks)
         } else {
             http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
         }
     })
 
     mux.HandleFunc("/tasks/", func(w http.ResponseWriter, r *http.Request) {
-        id := strings.TrimPrefix(r.URL.Path, "/tasks/")
+        prefix := strings.TrimPrefix(r.URL.Path, "/tasks/")
+        id, err := uuid.Parse(prefix)
+        if err != nil {
+            http.Error(w, "not found", http.StatusNotFound)
+            return
+        }
+
         if r.Method == http.MethodGet {
             h.GetTask(w, r, id)
         } else {
@@ -118,7 +126,12 @@ func NewRouter(h Handler) http.Handler {
     })
 
     mux.HandleFunc("/tasks/done/", func(w http.ResponseWriter, r *http.Request) {
-        id := strings.TrimPrefix(r.URL.Path, "/tasks/done/")
+        prefix := strings.TrimPrefix(r.URL.Path, "/tasks/done/")
+        id, err := uuid.Parse(prefix)
+        if err != nil {
+            http.Error(w, "not found", http.StatusNotFound)
+            return
+        }
     
         if r.Method == http.MethodPost {
             var requestBody struct {
@@ -143,7 +156,13 @@ func NewRouter(h Handler) http.Handler {
     
     
     mux.HandleFunc("/tasks/update/", func(w http.ResponseWriter, r *http.Request) {
-        id := strings.TrimPrefix(r.URL.Path, "/tasks/update/")
+        prefix := strings.TrimPrefix(r.URL.Path, "/tasks/update/")
+        id, err := uuid.Parse(prefix)
+        if err != nil {
+            http.Error(w, "not found", http.StatusNotFound)
+            return
+        }
+
         if r.Method == http.MethodPost {
             h.UpdateTask(w, r, id)
         } else {
@@ -152,7 +171,13 @@ func NewRouter(h Handler) http.Handler {
     })
 
     mux.HandleFunc("/tasks/delete/", func(w http.ResponseWriter, r *http.Request) {
-        id := strings.TrimPrefix(r.URL.Path, "/tasks/delete/")
+        prefix := strings.TrimPrefix(r.URL.Path, "/tasks/delete/")
+        id, err := uuid.Parse(prefix)
+        if err != nil {
+            http.Error(w, "not found", http.StatusNotFound)
+            return
+        }
+        
         if r.Method == http.MethodPost {
             h.DeleteTask(w, r, id)
         } else {

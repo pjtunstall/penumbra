@@ -60,7 +60,7 @@ func TestSQLiteStore_CreateAndGetTask(t *testing.T) {
 
 	due := time.Now().Add(24 * time.Hour)
 	task := app.Task{
-		Id:          uuid.NewString(),
+		Id:          uuid.New(),
 		Title:       "Test Task",
 		UserId:      1,
 		Description: "Testing",

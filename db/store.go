@@ -16,14 +16,14 @@ import (
 
 type Store interface {
     CreateUser(user app.User) error
-    AddSessionToken(user_id int) (string, time.Time, error)
-    GetUserIdFromSessionToken(sessionToken string) (int, error)
-    GetTaskById(id string) (app.Task, error)
-    SetTaskDone(id string) error
+    AddSessionToken(user_id int) (uuid.UUID, time.Time, error)
+    GetUserIdFromSessionToken(sessionToken uuid.UUID) (int, error)
+    GetTaskById(id uuid.UUID) (app.Task, error)
+    SetTaskDone(id uuid.UUID) error
     GetUserByEmail(email string) (app.User, error)
     GetAllTasks(user_id int) ([]app.Task, error)
     UpsertTask(task app.Task) error
-    DeleteTask(id string) error
+    DeleteTask(id uuid.UUID) error
 }
 
 type SQLiteStore struct {
@@ -100,33 +100,33 @@ func (s *SQLiteStore) GetUserByEmail(email string) (app.User, error) {
     return user, err
 }
 
-func (s *SQLiteStore) AddSessionToken(user_id int) (string, time.Time, error) {
+func (s *SQLiteStore) AddSessionToken(user_id int) (uuid.UUID, time.Time, error) {
     s.mu.Lock()
     defer s.mu.Unlock()
 
-    sessionToken := uuid.NewString()
+    sessionToken := uuid.New()
     expiresAt := time.Now().Add(24 * time.Hour)
 
-    sessionTokenHash, err := bcrypt.GenerateFromPassword([]byte(sessionToken), 10)
+    sessionTokenHash, err := bcrypt.GenerateFromPassword(sessionToken[:], 10)
     if err != nil {
-        return "", time.Time{}, err
+        return uuid.Nil, time.Time{}, err
     }
 
 	_, err = s.db.Exec(`
         UPDATE users SET session_token_hash = ?, session_expires_at = ? WHERE id = ?
     `, sessionTokenHash, expiresAt, user_id)
     if err != nil {
-        return "", time.Time{}, err
+        return uuid.Nil, time.Time{}, err
     }
 
     return sessionToken, expiresAt, err
 }
 
-func (s *SQLiteStore) GetUserIdFromSessionToken(sessionToken string) (int, error) {
+func (s *SQLiteStore) GetUserIdFromSessionToken(sessionToken uuid.UUID) (int, error) {
     s.mu.RLock()
     defer s.mu.RUnlock()
 
-    if sessionToken == "" {
+    if sessionToken == uuid.Nil {
         return 0, errors.New("session token is empty")
     }
 
@@ -138,18 +138,18 @@ func (s *SQLiteStore) GetUserIdFromSessionToken(sessionToken string) (int, error
 
     for rows.Next() {
         var userId int
-        var hash sql.NullString
+        var hash []byte
         var expiresAt time.Time
 
         if err := rows.Scan(&userId, &hash, &expiresAt); err != nil {
             return 0, err
         }
 
-        if !hash.Valid {
+        if len(hash) == 0 {
             continue // Skip users with no session token.
         }
 
-        if err := bcrypt.CompareHashAndPassword([]byte(hash.String), []byte(sessionToken)); err == nil {
+        if err := bcrypt.CompareHashAndPassword(hash, sessionToken[:]); err == nil {
             if time.Now().After(expiresAt) {
                 return 0, errors.New("session token has expired")
             }
@@ -160,7 +160,7 @@ func (s *SQLiteStore) GetUserIdFromSessionToken(sessionToken string) (int, error
     return 0, errors.New("session token not found")
 }
 
-func (s *SQLiteStore) GetTaskById(id string) (app.Task, error) {
+func (s *SQLiteStore) GetTaskById(id uuid.UUID) (app.Task, error) {
     s.mu.RLock()
     defer s.mu.RUnlock()
 
@@ -194,7 +194,7 @@ func (s *SQLiteStore) GetAllTasks(user_id int) ([]app.Task, error) {
     return tasks, nil
 }
 
-func (s *SQLiteStore) DeleteTask(id string) error {
+func (s *SQLiteStore) DeleteTask(id uuid.UUID) error {
     s.mu.Lock()
     defer s.mu.Unlock()
 
@@ -220,7 +220,7 @@ func (s *SQLiteStore) UpsertTask(t app.Task) error {
     return err
 }
 
-func (s *SQLiteStore) SetTaskDone(id string) error {
+func (s *SQLiteStore) SetTaskDone(id uuid.UUID) error {
     s.mu.Lock()
     defer s.mu.Unlock()
 

@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS tasks (
-  id TEXT PRIMARY KEY,
+  id BLOB PRIMARY KEY,
   user_id INTEGER NOT NULL,
   title TEXT NOT NULL,
   description TEXT,

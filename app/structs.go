@@ -1,6 +1,10 @@
 package app
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type User struct {
     Id   int
@@ -11,7 +15,7 @@ type User struct {
 }
 
 type Task struct {
-    Id          string       `json:"id"`
+    Id          uuid.UUID   `json:"id"`
     UserId      int `json:"userId"`
     Title       string    `json:"title"`
     Description string    `json:"description,omitempty"`

@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
@@ -42,6 +43,11 @@ func (m *MockHandler) HandleProtected(w http.ResponseWriter, r *http.Request, ha
 	handlerFunc(w, r)
 }
 
+func (m *MockHandler) HandleProtectedWithId(w http.ResponseWriter, r *http.Request, handlerFunc func(http.ResponseWriter, *http.Request, uuid.UUID)) {
+	m.Called(w, r, handlerFunc)
+	handlerFunc(w, r, uuid.Nil)
+}
+
 func (m *MockHandler) HandleDashboard(w http.ResponseWriter, r *http.Request) {
 	m.Called(w, r)
 }
@@ -66,19 +72,19 @@ func (m *MockHandler) HandleAllTasks(w http.ResponseWriter, r *http.Request) {
 	m.Called(w, r)
 }
 
-func (m *MockHandler) GetTask(w http.ResponseWriter, r *http.Request, id string) {
+func (m *MockHandler) GetTask(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
 	m.Called(w, r, id)
 }
 
-func (m *MockHandler) DoneTask(w http.ResponseWriter, r *http.Request, id string) {
+func (m *MockHandler) DoneTask(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
 	m.Called(w, r, id)
 }
 
-func (m *MockHandler) UpdateTask(w http.ResponseWriter, r *http.Request, id string) {
+func (m *MockHandler) UpdateTask(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
 	m.Called(w, r, id)
 }
 
-func (m *MockHandler) DeleteTask(w http.ResponseWriter, r *http.Request, id string) {
+func (m *MockHandler) DeleteTask(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
 	m.Called(w, r, id)
 }
 

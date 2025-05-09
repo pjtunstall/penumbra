@@ -2,9 +2,9 @@
 
 ## General
 
-- Consistently use BLOB for all hashes and UUIDs in the database; more efficient that using TEXT.
+- Make task UUID a BLOB.
 - Capitalize ID and UUID in Go.
-- `uuid.Parse` to validate and sanitize UUIDs from client.
+- Make session validation more consistent in handlers; at present empty value is only checked in `HandleDashboard`. Make it drier.
 
 ## Features
 
