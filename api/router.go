@@ -84,9 +84,9 @@ func NewRouter(h Handler) http.Handler {
 
     mux.HandleFunc("/tasks/create", func(w http.ResponseWriter, r *http.Request) {
         if r.Method == http.MethodGet {
-            h.HandleProtected(w, r, h.RenderCreate)
+            h.HandleProtected(w, r, h.RenderCreateTask)
         } else if r.Method == http.MethodPost {
-            h.HandleProtected(w, r, h.SubmitCreate)
+            h.HandleProtected(w, r, h.SubmitCreateTask)
         } else {
             http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
         }
@@ -111,7 +111,7 @@ func NewRouter(h Handler) http.Handler {
     mux.HandleFunc("/tasks/", func(w http.ResponseWriter, r *http.Request) {
         id := strings.TrimPrefix(r.URL.Path, "/tasks/")
         if r.Method == http.MethodGet {
-            h.HandleProtectedWithId(w, r, h.GetTask, id)
+            h.HandleProtectedWithTaskId(w, r, h.GetTask, id)
         } else {
             http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
         }
@@ -134,7 +134,7 @@ func NewRouter(h Handler) http.Handler {
                 return
             }
     
-            h.HandleProtectedWithId(w, r, h.DoneTask, id)
+            h.HandleProtectedWithTaskId(w, r, h.MarkTaskDone, id)
             return
         }
     
@@ -145,7 +145,7 @@ func NewRouter(h Handler) http.Handler {
     mux.HandleFunc("/tasks/update/", func(w http.ResponseWriter, r *http.Request) {
         id := strings.TrimPrefix(r.URL.Path, "/tasks/update/")
         if r.Method == http.MethodPost {
-            h.HandleProtectedWithId(w, r, h.UpdateTask, id)
+            h.HandleProtectedWithTaskId(w, r, h.UpdateTask, id)
         } else {
             http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
         }
@@ -154,7 +154,7 @@ func NewRouter(h Handler) http.Handler {
     mux.HandleFunc("/tasks/delete/", func(w http.ResponseWriter, r *http.Request) {
         id := strings.TrimPrefix(r.URL.Path, "/tasks/delete/")
         if r.Method == http.MethodPost {
-            h.HandleProtectedWithId(w, r, h.DeleteTask, id)
+            h.HandleProtectedWithTaskId(w, r, h.DeleteTask, id)
         } else {
             http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
         }

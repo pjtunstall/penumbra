@@ -52,6 +52,9 @@ func runTests() error {
 
 func TestSQLiteStore_CreateAndGetTask(t *testing.T) {
 	store, err := db.NewSQLiteStore(":memory:")
+	if err != nil {
+		t.Fatalf("NewSQLiteStore failed: %v", err)
+	}
 	defer store.Close()
 
 	if err != nil {
@@ -68,7 +71,7 @@ func TestSQLiteStore_CreateAndGetTask(t *testing.T) {
 		Done:        0,
 	}
 
-	err = store.UpsertTask(task)
+	err = store.CreateTask(task)
 	if err != nil {
 		t.Fatalf("CreateTask failed: %v", err)
 	}

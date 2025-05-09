@@ -22,7 +22,8 @@ type Store interface {
     SetTaskDone(id uuid.UUID) error
     GetUserByEmail(email string) (app.User, error)
     GetAllTasks(user_id int) ([]app.Task, error)
-    UpsertTask(task app.Task) error
+    CreateTask(task app.Task) error
+    UpdateTask(task app.Task) error
     DeleteTask(id uuid.UUID) error
 }
 
@@ -203,19 +204,27 @@ func (s *SQLiteStore) DeleteTask(id uuid.UUID) error {
     return err
 }
 
-func (s *SQLiteStore) UpsertTask(t app.Task) error {
+func (s *SQLiteStore) CreateTask(t app.Task) error {
     s.mu.Lock()
     defer s.mu.Unlock()
 
     _, err := s.db.Exec(`
         INSERT INTO tasks (id, user_id, title, description, done, due)
         VALUES (?, ?, ?, ?, ?, ?)
-        ON CONFLICT(id) DO UPDATE SET
-            title = excluded.title,
-            description = excluded.description,
-            done = excluded.done,
-            due = excluded.due
     `, t.Id, t.UserId, t.Title, t.Description, t.Done, t.Due)
+
+    return err
+}
+
+func (s *SQLiteStore) UpdateTask(t app.Task) error {
+    s.mu.Lock()
+    defer s.mu.Unlock()
+
+    _, err := s.db.Exec(`
+        UPDATE tasks
+        SET title = ?, description = ?, done = ?, due = ?
+        WHERE id = ?
+    `, t.Title, t.Description, t.Done, t.Due, t.Id)
 
     return err
 }

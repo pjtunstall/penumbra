@@ -2,9 +2,10 @@
 
 ## General
 
-- Make task UUID a BLOB.
 - Capitalize ID and UUID in Go.
-- Make session validation more consistent in handlers; at present empty value is only checked in `HandleDashboard`. Make it drier.
+- Revise names of handler functions for tasks.
+- Avoid having to get user id again in `CreateTask` and `HandleAllTasks`; maybe write a third middleware function, `HandleProtectedWithUserId`.
+- Be consistent about the use of "update" and "upsert" in handler versus store methods.
 
 ## Features
 

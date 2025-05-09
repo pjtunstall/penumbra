@@ -41,12 +41,12 @@ func (m *MockSQLiteStore) GetAllTasks(user_id int) ([]app.Task, error) {
     return args.Get(0).([]app.Task), args.Error(1)
 }
 
-func (m *MockSQLiteStore) RenderCreate() (int, error) {
+func (m *MockSQLiteStore) RenderCreateTask() (int, error) {
     args := m.Called()
     return args.Int(0), args.Error(1)
 }
 
-func (m *MockSQLiteStore) SubmitCreate(task app.Task) (int, error) {
+func (m *MockSQLiteStore) SubmitCreateTask(task app.Task) (int, error) {
     args := m.Called(task)
     return args.Int(0), args.Error(1)
 }
@@ -56,7 +56,7 @@ func (m *MockSQLiteStore) GetTaskById(id int) (app.Task, error) {
     return args.Get(0).(app.Task), args.Error(1)
 }
 
-func (m *MockSQLiteStore) DoneTask(id int) error {
+func (m *MockSQLiteStore) MarkTaskDone(id int) error {
     args := m.Called(id)
     return args.Error(0)
 }

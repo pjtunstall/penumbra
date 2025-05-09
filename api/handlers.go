@@ -38,14 +38,14 @@ type Handler interface {
     SubmitLogin(http.ResponseWriter, *http.Request)
     RenderRegister(http.ResponseWriter, *http.Request)
     SubmitRegister(http.ResponseWriter, *http.Request)
-    RenderCreate(http.ResponseWriter, *http.Request)
-    SubmitCreate(http.ResponseWriter, *http.Request)
+    RenderCreateTask(http.ResponseWriter, *http.Request)
+    SubmitCreateTask(http.ResponseWriter, *http.Request)
     GetTask(http.ResponseWriter, *http.Request, uuid.UUID)
-    DoneTask(http.ResponseWriter, *http.Request, uuid.UUID)
+    MarkTaskDone(http.ResponseWriter, *http.Request, uuid.UUID)
     HandleDashboard(http.ResponseWriter, *http.Request)
     HandleHome(http.ResponseWriter, *http.Request)
     HandleProtected(http.ResponseWriter, *http.Request, func(http.ResponseWriter, *http.Request))
-    HandleProtectedWithId(http.ResponseWriter, *http.Request, func(http.ResponseWriter, *http.Request, uuid.UUID), string)
+    HandleProtectedWithTaskId(http.ResponseWriter, *http.Request, func(http.ResponseWriter, *http.Request, uuid.UUID), string)
     HandleLogout(http.ResponseWriter, *http.Request)
     HandleAllTasks(http.ResponseWriter, *http.Request)
     DeleteTask(http.ResponseWriter, *http.Request, uuid.UUID)
@@ -234,7 +234,7 @@ func (h *RealHandler) HandleDashboard(w http.ResponseWriter, r *http.Request) {
     h.RenderPage(w, r, "dashboard", data)
 }
 
-func (h *RealHandler) RenderCreate(w http.ResponseWriter, r *http.Request) {
+func (h *RealHandler) RenderCreateTask(w http.ResponseWriter, r *http.Request) {
     cookie, err := r.Cookie("session_token")
     if err != nil {
         log.Println("Error getting cookie: ", err)
@@ -265,7 +265,7 @@ func (h *RealHandler) RenderCreate(w http.ResponseWriter, r *http.Request) {
     h.RenderPage(w, r, "create", nil)
 }
 
-func (h *RealHandler) SubmitCreate(w http.ResponseWriter, r *http.Request) {
+func (h *RealHandler) SubmitCreateTask(w http.ResponseWriter, r *http.Request) {
     r.ParseForm()
     title := r.FormValue("title")
 	description := r.FormValue("description")
@@ -305,7 +305,7 @@ func (h *RealHandler) SubmitCreate(w http.ResponseWriter, r *http.Request) {
 		Due:         dueDate,
 	}
 
-    err = h.store.UpsertTask(task)
+    err = h.store.CreateTask(task)
     if err != nil {
         http.Error(w, "failed to create task", http.StatusInternalServerError)
         return
@@ -315,26 +315,6 @@ func (h *RealHandler) SubmitCreate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *RealHandler) GetTask(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
-    cookie, err := r.Cookie("session_token")
-    if err != nil {
-        log.Println("Error getting cookie: ", err)
-        http.Redirect(w, r, "/login", http.StatusSeeOther)
-        return
-    }
-
-    sessionToken, err := uuid.Parse(cookie.Value)
-    if err != nil {
-        http.Error(w, "not logged in", http.StatusUnauthorized)
-        return
-    }
-
-    _, err = h.store.GetUserIdFromSessionToken(sessionToken)
-    if err != nil {
-        log.Println("Error getting user id: ", err)
-        http.Redirect(w, r, "/login", http.StatusSeeOther)
-        return
-    }
-
     task, err := h.store.GetTaskById(id)
     if err != nil {
         http.Error(w, "not found", http.StatusNotFound)
@@ -380,7 +360,7 @@ func (h *RealHandler) HandleProtected(w http.ResponseWriter, r *http.Request, ha
     handler(w, r)
 }
 
-func (h *RealHandler) HandleProtectedWithId(w http.ResponseWriter, r *http.Request, handler func(http.ResponseWriter, *http.Request, uuid.UUID), idString string) {
+func (h *RealHandler) HandleProtectedWithTaskId(w http.ResponseWriter, r *http.Request, handler func(http.ResponseWriter, *http.Request, uuid.UUID), idString string) {
     cookie, err := r.Cookie("session_token")
     if err != nil {
         log.Println("Error getting cookie: ", err)
@@ -419,7 +399,6 @@ func (h *RealHandler) HandleLogout(w http.ResponseWriter, r *http.Request) {
     http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
 
-// TODO: Avoid the clumsiness of having to get the user id again. The reason for this is because of the HandleProtected wrapper.
 func (h *RealHandler) HandleAllTasks(w http.ResponseWriter, r *http.Request) {
     cookie, err := r.Cookie("session_token")
     if err != nil {
@@ -466,42 +445,37 @@ func (h *RealHandler) HandleAllTasks(w http.ResponseWriter, r *http.Request) {
     h.RenderPage(w, r, "tasks", data)
 }
 
+func (h *RealHandler) DeleteTask(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
+    err := h.store.DeleteTask(id)
+    if err != nil {
+        http.Error(w, "not found", http.StatusNotFound)
+        return
+    }
+
+    http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+}
+
+func (h *RealHandler) MarkTaskDone(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
+    err := h.store.SetTaskDone(id)
+    if err != nil {
+        http.Error(w, "not found", http.StatusNotFound)
+        return
+    }
+
+    http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+}
+
 func (h *RealHandler) UpdateTask(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
-    cookie, err := r.Cookie("session_token")
-    if err != nil {
-        log.Println("Error getting cookie: ", err)
-        http.Redirect(w, r, "/login", http.StatusSeeOther)
-        return
-    }
-
-    sessionToken, err := uuid.Parse(cookie.Value)
-    if err != nil {
-        http.Error(w, "not logged in", http.StatusUnauthorized)
-        return
-    }
-
-    _, err = h.store.GetUserIdFromSessionToken(sessionToken)
-    if err != nil {
-        log.Println("Error getting user id: ", err)
-        http.Redirect(w, r, "/login", http.StatusSeeOther)
-        return
-    }
-
-    if err := r.ParseForm(); err != nil {
-        log.Println("Error parsing form: ", err)
-        http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-        return
-    }
-
     title := r.FormValue("title")
     status := r.FormValue("status")
     description := r.FormValue("description")
     due := r.FormValue("due")
+
     dueDate, err := time.Parse("Mon Jan 2 2006", due)
-	if err != nil {
-		http.Error(w, "Invalid date format", http.StatusBadRequest)
-		return
-	}
+    if err != nil {
+        http.Error(w, "Invalid date format", http.StatusBadRequest)
+        return
+    }
 
     dueDate = time.Date(dueDate.Year(), dueDate.Month(), dueDate.Day(), 23, 59, 59, 999999999, dueDate.Location())
 
@@ -513,69 +487,9 @@ func (h *RealHandler) UpdateTask(w http.ResponseWriter, r *http.Request, id uuid
         Due:         dueDate,
     }
 
-    err = h.store.UpsertTask(updatedTask)
+    err = h.store.UpdateTask(updatedTask)
     if err != nil {
-        http.Error(w, "not found", http.StatusNotFound)
-        return
-    }
-
-    http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
-}
-
-func (h *RealHandler) DeleteTask(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
-    cookie, err := r.Cookie("session_token")
-    if err != nil {
-        log.Println("Error getting cookie: ", err)
-        http.Redirect(w, r, "/login", http.StatusSeeOther)
-        return
-    }
-
-    sessionToken, err := uuid.Parse(cookie.Value)
-    if err != nil {
-        http.Error(w, "not logged in", http.StatusUnauthorized)
-        return
-    }
-
-    _, err = h.store.GetUserIdFromSessionToken(sessionToken)
-    if err != nil {
-        log.Println("Error getting user id: ", err)
-        http.Redirect(w, r, "/login", http.StatusSeeOther)
-        return
-    }
-
-    err = h.store.DeleteTask(id)
-    if err != nil {
-        http.Error(w, "not found", http.StatusNotFound)
-        return
-    }
-
-    http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
-}
-
-func (h *RealHandler) DoneTask(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
-    cookie, err := r.Cookie("session_token")
-    if err != nil {
-        log.Println("Error getting cookie: ", err)
-        http.Redirect(w, r, "/login", http.StatusSeeOther)
-        return
-    }
-
-    sessionToken, err := uuid.Parse(cookie.Value)
-    if err != nil {
-        http.Error(w, "not logged in", http.StatusUnauthorized)
-        return
-    }
-
-    _, err = h.store.GetUserIdFromSessionToken(sessionToken)
-    if err != nil {
-        log.Println("Error getting user id: ", err)
-        http.Redirect(w, r, "/login", http.StatusSeeOther)
-        return
-    }
-
-    err = h.store.SetTaskDone(id)
-    if err != nil {
-        http.Error(w, "not found", http.StatusNotFound)
+        http.Error(w, "Error updating task", http.StatusInternalServerError)
         return
     }
 

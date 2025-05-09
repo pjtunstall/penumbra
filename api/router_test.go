@@ -43,7 +43,7 @@ func (m *MockHandler) HandleProtected(w http.ResponseWriter, r *http.Request, ha
 	handlerFunc(w, r)
 }
 
-func (m *MockHandler) HandleProtectedWithId(w http.ResponseWriter, r *http.Request, handlerFunc func(http.ResponseWriter, *http.Request, uuid.UUID), id string) {
+func (m *MockHandler) HandleProtectedWithTaskId(w http.ResponseWriter, r *http.Request, handlerFunc func(http.ResponseWriter, *http.Request, uuid.UUID), id string) {
 	m.Called(w, r, handlerFunc, id)
 	handlerFunc(w, r, uuid.MustParse(id))
 }
@@ -56,11 +56,11 @@ func (m *MockHandler) HandleAbout(w http.ResponseWriter, r *http.Request) {
 	m.Called(w, r)
 }
 
-func (m *MockHandler) RenderCreate(w http.ResponseWriter, r *http.Request) {
+func (m *MockHandler) RenderCreateTask(w http.ResponseWriter, r *http.Request) {
 	m.Called(w, r)
 }
 
-func (m *MockHandler) SubmitCreate(w http.ResponseWriter, r *http.Request) {
+func (m *MockHandler) SubmitCreateTask(w http.ResponseWriter, r *http.Request) {
 	m.Called(w, r)
 }
 
@@ -76,7 +76,7 @@ func (m *MockHandler) GetTask(w http.ResponseWriter, r *http.Request, id uuid.UU
 	m.Called(w, r, id)
 }
 
-func (m *MockHandler) DoneTask(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
+func (m *MockHandler) MarkTaskDone(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
 	m.Called(w, r, id)
 }
 
@@ -156,14 +156,14 @@ func TestNewRouter_Routes(t *testing.T) {
 			expectFunc: func() {
 				id := "123e4567-e89b-12d3-a456-426614174000"
 				mockHandler.On(
-					"HandleProtectedWithId",
+					"HandleProtectedWithTaskId",
 					mock.Anything,
 					mock.Anything,
 					mock.AnythingOfType("func(http.ResponseWriter, *http.Request, uuid.UUID)"),
 					id,
 				).Once()
 			
-				mockHandler.On("DoneTask", mock.Anything, mock.Anything, uuid.MustParse(id)).Once()
+				mockHandler.On("MarkTaskDone", mock.Anything, mock.Anything, uuid.MustParse(id)).Once()
 			},
 			expectCode: http.StatusOK,
 		},			
