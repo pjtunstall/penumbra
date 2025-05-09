@@ -6,7 +6,7 @@ document.querySelectorAll(".row-checkbox").forEach(function (checkbox) {
 
     const id = this.getAttribute("data-id");
 
-    fetch("/task/done/" + id, {
+    fetch("/tasks/done/" + id, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

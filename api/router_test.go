@@ -145,7 +145,7 @@ func TestNewRouter_Routes(t *testing.T) {
 		{
 			name:   "Task Done POST",
 			method: http.MethodPost,
-			url:    "/task/done/456",
+			url:    "/tasks/done/456",
 			body:   mustJSON(map[string]bool{"checked": true}),
 			expectFunc: func() {
 				mockHandler.On("DoneTask", mock.Anything, mock.Anything, "456").Once()

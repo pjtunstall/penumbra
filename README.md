@@ -5,7 +5,7 @@
 
 ## Overview
 
-PENUMBRA (Planning & Execution Nexus for Urgent Management, Briefing & Recording App) is a new web application for caseworkers to manage their tasks. Use of PENUMBRA is not mandatory, but may become so for any caseworker who elects not to use it.
+A task-manager app written in Go as a learning exercise.
 
 ## Project status
 
@@ -34,12 +34,12 @@ To run all tests, run `go test ./...`.
 - `GET /tasks` - list all tasks for the current user, including descriptions, due dates, and status
 - `GET /tasks/create` - show form to create new task
 - `POST /tasks/create` - submit form to create new task
-- `GET /task/{id}` - show task details, including description, due date, and status in a form that allows the task to be deleted, or edited and updated.
-- `POST /task/delete/{id}` - delete task
-- `POST /task/done/{id}` - mark task as done
-- `POST /task/update/{id}` - submit form to update task
+- `GET /tasks/{id}` - show task details, including description, due date, and status in a form that allows the task to be deleted, or edited and updated.
+- `POST /tasks/delete/{id}` - delete task
+- `POST /tasks/done/{id}` - mark task as done
+- `POST /tasks/update/{id}` - submit form to update task
 
-At some point, I'd like to write this up into an `openapi.yaml` file and experiment with using `openapi-generator` to generate client libraries.
+Note that the current `openapi.yaml` file is a work in progress and doesn't reflect the present implementation. In particular, it assumes that the server returns JSON instead of HTML.
 
 Regarding the choice of names, Chat remarks:
 

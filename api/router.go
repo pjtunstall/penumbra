@@ -117,8 +117,8 @@ func NewRouter(h Handler) http.Handler {
         }
     })
 
-    mux.HandleFunc("/task/done/", func(w http.ResponseWriter, r *http.Request) {
-        id := strings.TrimPrefix(r.URL.Path, "/task/done/")
+    mux.HandleFunc("/tasks/done/", func(w http.ResponseWriter, r *http.Request) {
+        id := strings.TrimPrefix(r.URL.Path, "/tasks/done/")
     
         if r.Method == http.MethodPost {
             var requestBody struct {
