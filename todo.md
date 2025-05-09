@@ -1,12 +1,5 @@
 # Todo
 
-## General
-
-- Capitalize ID and UUID in Go.
-- Revise names of handler functions for tasks.
-- Avoid having to get user id again in `CreateTask` and `HandleAllTasks`; maybe write a third middleware function, `HandleProtectedWithUserId`.
-- Be consistent about the use of "update" and "upsert" in handler versus store methods.
-
 ## Features
 
 - Have client notify the user when a deadline is close.
@@ -24,6 +17,7 @@
 
 ## Security
 
+- There should be security tests as well as basic functionality tests.
 - Check that all inputs are sanitized and restrict their size. SQL-injection is prevented, so just make sure no input is inserted directly into the HTML.
   - Limit the size of task names and descriptions, user names, and emails. Verify email format. In production, emails would also need verifying by sending a confirmation code.
 - Switch to gorilla/mux (or chi?) for a simple way to do more secure route parsing rather than just using `TrimPrefix` to extract ids. I'm parsing the suffix to an int; that's some validation, but consider risks associated with malicious routes.
@@ -41,12 +35,11 @@
 ## Naming
 
 - Use a prefix like `/v1/` to indicate versioning.
-- Review names of handlers for consistency and clarity.
+- Capitalize ID in Go; there are no instances of UUID. But be careful not to corrupt existing UUIDs (in tests) and hashes (of dependencies).
 
 ## Refactor
 
 - See what can be simplified.
-- Make auth drier and moer robust: at the moment, handlers are wrapped in `HandleProtected` only if they don't have another argument besides the response writer and request; otherwise, they check authorization themselves. This could be done more consistently or at least without the repetition. Could this be accomplished with generics? An interface defined as functions of the currently accepted signature plus any other signatures I need?
 - Split up large files.
 
 ## Cosmetic

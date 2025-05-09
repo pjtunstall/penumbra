@@ -48,6 +48,11 @@ func (m *MockHandler) HandleProtectedWithTaskId(w http.ResponseWriter, r *http.R
 	handlerFunc(w, r, uuid.MustParse(id))
 }
 
+func (m *MockHandler) HandleProtectedWithUserId(w http.ResponseWriter, r *http.Request, handlerFunc func(http.ResponseWriter, *http.Request, int)) {
+	m.Called(w, r, handlerFunc)
+	handlerFunc(w, r, 1)
+}
+
 func (m *MockHandler) HandleDashboard(w http.ResponseWriter, r *http.Request) {
 	m.Called(w, r)
 }
@@ -60,16 +65,16 @@ func (m *MockHandler) RenderCreateTask(w http.ResponseWriter, r *http.Request) {
 	m.Called(w, r)
 }
 
-func (m *MockHandler) SubmitCreateTask(w http.ResponseWriter, r *http.Request) {
-	m.Called(w, r)
+func (m *MockHandler) SubmitCreateTask(w http.ResponseWriter, r *http.Request, userId int) {
+	m.Called(w, r, userId)
 }
 
 func (m *MockHandler) HandleLogout(w http.ResponseWriter, r *http.Request) {
 	m.Called(w, r)
 }
 
-func (m *MockHandler) HandleAllTasks(w http.ResponseWriter, r *http.Request) {
-	m.Called(w, r)
+func (m *MockHandler) HandleAllTasks(w http.ResponseWriter, r *http.Request, userId int) {
+	m.Called(w, r, userId)
 }
 
 func (m *MockHandler) GetTask(w http.ResponseWriter, r *http.Request, id uuid.UUID) {

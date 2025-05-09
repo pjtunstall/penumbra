@@ -86,7 +86,7 @@ func NewRouter(h Handler) http.Handler {
         if r.Method == http.MethodGet {
             h.HandleProtected(w, r, h.RenderCreateTask)
         } else if r.Method == http.MethodPost {
-            h.HandleProtected(w, r, h.SubmitCreateTask)
+            h.HandleProtectedWithUserId(w, r, h.SubmitCreateTask)
         } else {
             http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
         }
@@ -102,7 +102,7 @@ func NewRouter(h Handler) http.Handler {
 
     mux.HandleFunc("/tasks", func(w http.ResponseWriter, r *http.Request) {
         if r.Method == http.MethodGet {
-            h.HandleProtected(w, r, h.HandleAllTasks)
+            h.HandleProtectedWithUserId(w, r, h.HandleAllTasks)
         } else {
             http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
         }

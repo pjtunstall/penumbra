@@ -22,7 +22,6 @@ type Task struct {
     Status      string    `json:"status"`
     Done        int      `json:"done"`
     Due         time.Time `json:"due"`
-    Uuid        string  `json:"uuid"`
 }
 
 func (t *Task) SetStatus() {
