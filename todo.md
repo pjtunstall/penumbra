@@ -40,7 +40,6 @@
 ## Refactor
 
 - See what can be simplified.
-- Split up large files.
 
 ## Cosmetic
 
