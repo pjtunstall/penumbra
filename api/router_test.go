@@ -43,9 +43,9 @@ func (m *MockHandler) HandleProtected(w http.ResponseWriter, r *http.Request, ha
 	handlerFunc(w, r)
 }
 
-func (m *MockHandler) HandleProtectedWithId(w http.ResponseWriter, r *http.Request, handlerFunc func(http.ResponseWriter, *http.Request, uuid.UUID)) {
-	m.Called(w, r, handlerFunc)
-	handlerFunc(w, r, uuid.Nil)
+func (m *MockHandler) HandleProtectedWithId(w http.ResponseWriter, r *http.Request, handlerFunc func(http.ResponseWriter, *http.Request, uuid.UUID), id string) {
+	m.Called(w, r, handlerFunc, id)
+	handlerFunc(w, r, uuid.MustParse(id))
 }
 
 func (m *MockHandler) HandleDashboard(w http.ResponseWriter, r *http.Request) {

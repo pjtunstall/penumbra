@@ -45,7 +45,7 @@ type Handler interface {
     HandleDashboard(http.ResponseWriter, *http.Request)
     HandleHome(http.ResponseWriter, *http.Request)
     HandleProtected(http.ResponseWriter, *http.Request, func(http.ResponseWriter, *http.Request))
-    HandleProtectedWithId(http.ResponseWriter, *http.Request, func(http.ResponseWriter, *http.Request, uuid.UUID))
+    HandleProtectedWithId(http.ResponseWriter, *http.Request, func(http.ResponseWriter, *http.Request, uuid.UUID), string)
     HandleLogout(http.ResponseWriter, *http.Request)
     HandleAllTasks(http.ResponseWriter, *http.Request)
     DeleteTask(http.ResponseWriter, *http.Request, uuid.UUID)
@@ -380,7 +380,7 @@ func (h *RealHandler) HandleProtected(w http.ResponseWriter, r *http.Request, ha
     handler(w, r)
 }
 
-func (h *RealHandler) HandleProtectedWithId(w http.ResponseWriter, r *http.Request, handler func(http.ResponseWriter, *http.Request, uuid.UUID)) {
+func (h *RealHandler) HandleProtectedWithId(w http.ResponseWriter, r *http.Request, handler func(http.ResponseWriter, *http.Request, uuid.UUID), idString string) {
     cookie, err := r.Cookie("session_token")
     if err != nil {
         log.Println("Error getting cookie: ", err)
@@ -401,7 +401,13 @@ func (h *RealHandler) HandleProtectedWithId(w http.ResponseWriter, r *http.Reque
         return
     }
 
-    handler(w, r, sessionToken)
+    id, err := uuid.Parse(idString)
+    if err != nil {
+        http.Error(w, "invalid id", http.StatusNotFound)
+        return
+    }
+
+    handler(w, r, id)
 }
 
 func (h *RealHandler) HandleLogout(w http.ResponseWriter, r *http.Request) {
