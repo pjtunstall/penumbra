@@ -151,13 +151,14 @@ func TestNewRouter_Routes(t *testing.T) {
 		{
 			name:   "Task Done POST",
 			method: http.MethodPost,
-			url:    "/tasks/done/456",
+			url:    "/tasks/done/123e4567-e89b-12d3-a456-426614174000",
 			body:   mustJSON(map[string]bool{"checked": true}),
 			expectFunc: func() {
-				mockHandler.On("DoneTask", mock.Anything, mock.Anything, "456").Once()
+				id := uuid.MustParse("123e4567-e89b-12d3-a456-426614174000")
+				mockHandler.On("DoneTask", mock.Anything, mock.Anything, id).Once()
 			},
 			expectCode: http.StatusOK,
-		},
+		},			
 		{
 			name:   "Logout GET",
 			method: http.MethodGet,
