@@ -1,17 +1,23 @@
 # Todo
 
+## General
+
+- Consistently use BLOB for all hashes and UUIDs in the database; more efficient that using TEXT.
+- Capitalize ID and UUID in Go.
+- `uuid.Parse` to validate and sanitize UUIDs from client.
+
 ## Features
 
 - Have client notify the user when a deadline is close.
 - Cache fetched tasks in memory and update status when a deadline passes. Let client be the one to derive whether a task is overdue; currently the server computes it from due data and current time before sending task data to the client. Be sure to synchronize time between server and client.
-- Create a real `openapi.yaml` file. The current `openapi.yaml` file is a work in progress and doesn't reflect the present implementation. In particular, it assumes that the server returns JSON instead of HTML.
-- Add ability to uncheck a task in case it was accidentally marked as done. (At some point, experiment with using `openapi-generator` to generate client libraries.)
+- Create an `openapi.yaml` file. If asking AI help with this, make sure it does correcpond to the code; in particular, make sure that it reflects the fact that the server returns HTML, not JSON. (At some point, experiment with using `openapi-generator` to generate client libraries.)
+- Add ability to uncheck a task in case it was accidentally marked as done.
 
 ## Error handling
 
 - Ensure that error handling is consistent.
 - Consider when to panic and what to log, and in what format.
-- Notify user if their username or password is incorrect, or too long on registration.
+- Notify user if their username or password is incorrect or too long on registration.
 - Have an error page template to gracefully display error messages that the user in the name.
 - Add more checking around task status to ensure done is converted correctly and never set to an anomalous value.
 

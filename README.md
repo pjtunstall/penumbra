@@ -39,8 +39,6 @@ To run all tests, run `go test ./...`.
 - `POST /tasks/done/{id}` - mark task as done
 - `POST /tasks/update/{id}` - submit form to update task
 
-Note that the current `openapi.yaml` file is a work in progress and doesn't reflect the present implementation. In particular, it assumes that the server returns JSON instead of HTML.
-
 Regarding the choice of names, Chat remarks:
 
 > You're following a classic HTML form-based pattern, and it's perfectly fine for a traditional server-rendered app. REST purists would nudge you toward resource-based paths and HTTP verbs, but in practice for web apps, what you're doing is conventional and user-friendly.
