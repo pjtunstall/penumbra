@@ -1,9 +1,5 @@
 # Todo
 
-## Fix
-
-- Protect database access with `RWMutex`.
-
 ## Features
 
 - Add an `openapi.yaml` file.

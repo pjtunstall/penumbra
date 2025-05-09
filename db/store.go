@@ -3,7 +3,8 @@ package db
 import (
 	"database/sql"
 	"errors"
-	"log"
+	"fmt"
+	"sync"
 	"time"
 
 	"penumbra/app"
@@ -27,58 +28,82 @@ type Store interface {
 
 type SQLiteStore struct {
     db *sql.DB
-    Path string
+    path string
+    mu   sync.RWMutex
 }
 
-// Ensure SQLiteStore implements the Store interface
+// Ensure SQLiteStore implements the Store interface.
 var _ Store = &SQLiteStore{}
 
-func NewSQLiteStore(path string) *SQLiteStore {
-    db, err := sql.Open("sqlite", path)
-    if err != nil {
-        log.Fatal(err)
-    }
+func (s *SQLiteStore) Close() error {
+    s.mu.Lock()
+    defer s.mu.Unlock()
 
-    panicIfTablesDoNotExist(db)
-
-    return &SQLiteStore{db: db, Path: path}
+	return s.db.Close()
 }
 
-func panicIfTablesDoNotExist(db *sql.DB) {
-    var tableName string
-    err := db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name='tasks';").Scan(&tableName)
+func NewSQLiteStore(path string) (*SQLiteStore, error) {
+    db, err := sql.Open("sqlite", path)
     if err != nil {
-        if err == sql.ErrNoRows {
-            panic("tasks table does not exist in the database")
-        }
-        log.Fatal(err)
+        return nil, fmt.Errorf("failed to open database: %w", err)
     }
 
-    err = db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name='users';").Scan(&tableName)
+    if err := checkAllTablesExist(db); err != nil {
+        return nil, err
+    }
+
+    return &SQLiteStore{db: db, path: path}, nil
+}
+
+func checkAllTablesExist(db *sql.DB) error {
+    tables := []string{"tasks", "users"}
+    for _, table := range tables {
+        if err := checkTableExists(db, table); err != nil {
+            return err
+        }
+    }
+    return nil
+}
+
+func checkTableExists(db *sql.DB, tableName string) error {
+    var name string
+    err := db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name=?;", tableName).Scan(&name)
     if err != nil {
         if err == sql.ErrNoRows {
-            panic("users table does not exist in the database")
+            return fmt.Errorf("table %s does not exist in the database", tableName)
         }
-        log.Fatal(err)
+        return fmt.Errorf("error checking table %s: %w", tableName, err)
     }
+    return nil
 }
 
 func (s *SQLiteStore) CreateUser(user app.User) error {
+    s.mu.Lock()
+    defer s.mu.Unlock()
+
     _, err := s.db.Exec(`
     INSERT INTO users (name, password_hash, email, phone, session_token_hash, session_expires_at)
     VALUES (?, ?, ?, ?, '', ?)`,
     user.Name, user.PasswordHash, user.Email, user.Phone, time.Unix(0, 0))
+
     return err
 }
 
 func (s *SQLiteStore) GetUserByEmail(email string) (app.User, error) {
+    s.mu.RLock()
+    defer s.mu.RUnlock()
+
     var user app.User
     err := s.db.QueryRow(`SELECT id, name, password_hash, email, phone FROM users WHERE email = ?`, email).
         Scan(&user.Id, &user.Name, &user.PasswordHash, &user.Email, &user.Phone)
+
     return user, err
 }
 
 func (s *SQLiteStore) AddSessionToken(user_id int) (string, time.Time, error) {
+    s.mu.Lock()
+    defer s.mu.Unlock()
+
     sessionToken := uuid.NewString()
     expiresAt := time.Now().Add(24 * time.Hour)
 
@@ -98,6 +123,9 @@ func (s *SQLiteStore) AddSessionToken(user_id int) (string, time.Time, error) {
 }
 
 func (s *SQLiteStore) GetUserIdFromSessionToken(sessionToken string) (int, error) {
+    s.mu.RLock()
+    defer s.mu.RUnlock()
+
     if sessionToken == "" {
         return 0, errors.New("session token is empty")
     }
@@ -133,18 +161,21 @@ func (s *SQLiteStore) GetUserIdFromSessionToken(sessionToken string) (int, error
 }
 
 func (s *SQLiteStore) GetTaskById(id string) (app.Task, error) {
+    s.mu.RLock()
+    defer s.mu.RUnlock()
+
     var t app.Task
     err := s.db.QueryRow(`SELECT id, title, description, done, due FROM tasks WHERE id = ?`, id).
         Scan(&t.Id, &t.Title, &t.Description, &t.Done, &t.Due)
     t.SetStatus()
+
     return t, err
 }
 
-func (s *SQLiteStore) Close() error {
-	return s.db.Close()
-}
-
 func (s *SQLiteStore) GetAllTasks(user_id int) ([]app.Task, error) {
+    s.mu.RLock()
+    defer s.mu.RUnlock()
+
     rows, err := s.db.Query(`SELECT id, title, description, done, due FROM tasks WHERE user_id = ?`, user_id)
     if err != nil {
         return nil, err
@@ -159,15 +190,23 @@ func (s *SQLiteStore) GetAllTasks(user_id int) ([]app.Task, error) {
         t.SetStatus()
         tasks = append(tasks, t)
     }
+
     return tasks, nil
 }
 
 func (s *SQLiteStore) DeleteTask(id string) error {
+    s.mu.Lock()
+    defer s.mu.Unlock()
+
     _, err := s.db.Exec(`DELETE FROM tasks WHERE id = ?`, id)
+    
     return err
 }
 
 func (s *SQLiteStore) UpsertTask(t app.Task) error {
+    s.mu.Lock()
+    defer s.mu.Unlock()
+
     _, err := s.db.Exec(`
         INSERT INTO tasks (id, user_id, title, description, done, due)
         VALUES (?, ?, ?, ?, ?, ?)
@@ -177,10 +216,15 @@ func (s *SQLiteStore) UpsertTask(t app.Task) error {
             done = excluded.done,
             due = excluded.due
     `, t.Id, t.UserId, t.Title, t.Description, t.Done, t.Due)
+
     return err
 }
 
 func (s *SQLiteStore) SetTaskDone(id string) error {
+    s.mu.Lock()
+    defer s.mu.Unlock()
+
     _, err := s.db.Exec(`UPDATE tasks SET done = 1 WHERE id = ?`, id)
+
     return err
 }

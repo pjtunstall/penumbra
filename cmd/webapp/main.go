@@ -15,7 +15,11 @@ var tmplFS embed.FS
 var templates = template.Must(template.ParseFS(tmplFS, "templates/*.html"))
 
 func main() {
-    store := db.NewSQLiteStore("data/dev.db")
+    store, err := db.NewSQLiteStore("data/dev.db")
+	if err != nil {
+		log.Fatalf("NewSQLiteStore failed: %v", err)
+	}
+
     handler := api.NewHandler(store, templates)
     router := api.NewRouter(handler)
 

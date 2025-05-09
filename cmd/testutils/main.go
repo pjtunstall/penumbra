@@ -51,8 +51,12 @@ func runTests() error {
 }
 
 func TestSQLiteStore_CreateAndGetTask(t *testing.T) {
-	store := db.NewSQLiteStore(":memory:")
+	store, err := db.NewSQLiteStore(":memory:")
 	defer store.Close()
+
+	if err != nil {
+		t.Fatalf("NewSQLiteStore failed: %v", err)
+	}
 
 	due := time.Now().Add(24 * time.Hour)
 	task := app.Task{
@@ -64,7 +68,7 @@ func TestSQLiteStore_CreateAndGetTask(t *testing.T) {
 		Done:        0,
 	}
 
-	err := store.UpsertTask(task)
+	err = store.UpsertTask(task)
 	if err != nil {
 		t.Fatalf("CreateTask failed: %v", err)
 	}
@@ -80,7 +84,11 @@ func TestSQLiteStore_CreateAndGetTask(t *testing.T) {
 }
 
 func TestSQLiteStore_Close(t *testing.T) {
-	store := db.NewSQLiteStore(":memory:")
+	store, err := db.NewSQLiteStore(":memory:")
+	if err != nil {
+		t.Fatalf("NewSQLiteStore failed: %v", err)
+	}
+
 	if err := store.Close(); err != nil {
 		t.Errorf("Close failed: %v", err)
 	}
