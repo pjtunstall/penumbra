@@ -8,11 +8,11 @@ import (
 	"testing"
 	"time"
 
-	"penumbra/app"
-
 	_ "github.com/glebarez/go-sqlite"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
+
+	"penumbra/app"
 )
 
 type Store interface {

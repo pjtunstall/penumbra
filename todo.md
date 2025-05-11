@@ -29,7 +29,7 @@
 
 ## Tests
 
-- Finish writing tests for handlers, router, and database store methods. Consider what else can be tested.
+- Write tests for handlers. Check that router tests are complete. Consider what else can be tested, e.g. helpers in `store.go`.
 - Watch out for inconsistencies in testing style, e.g. when to use testify. Less dependencies is good, but testify might make the code clearer due to its more declarative style.
 
 ## Naming
