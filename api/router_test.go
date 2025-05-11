@@ -103,6 +103,19 @@ func TestDashboardRoute(t *testing.T) {
 	})
 	mockHandler.On("HandleDashboard", mock.Anything, mock.Anything).Maybe()
 
+	mockHandler.On("HandleProtectedWithTaskId", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Maybe().
+	Run(func(args mock.Arguments) {
+		fn := args.Get(2).(func(http.ResponseWriter, *http.Request, uuid.UUID))
+		id := uuid.MustParse(args.Get(3).(string))
+		fn(args.Get(0).(http.ResponseWriter), args.Get(1).(*http.Request), id)
+	})
+
+	mockHandler.On("HandleProtectedWithUserId", mock.Anything, mock.Anything, mock.Anything).Maybe().
+	Run(func(args mock.Arguments) {
+		fn := args.Get(2).(func(http.ResponseWriter, *http.Request, int))
+		fn(args.Get(0).(http.ResponseWriter), args.Get(1).(*http.Request), 1)
+	})
+
 	req := httptest.NewRequest(http.MethodGet, "/dashboard", nil)
 	rec := httptest.NewRecorder()
 

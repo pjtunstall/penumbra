@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+	"testing"
 	"time"
 
 	"penumbra/app"
@@ -236,4 +237,49 @@ func (s *SQLiteStore) SetTaskDone(id uuid.UUID) error {
     _, err := s.db.Exec(`UPDATE tasks SET done = 1 WHERE id = ?`, id)
 
     return err
+}
+
+func TestSetTaskDone(t *testing.T) {
+    db, err := sql.Open("sqlite3", ":memory:")
+    if err != nil {
+        t.Fatalf("failed to open db: %v", err)
+    }
+    defer db.Close()
+
+    store := &SQLiteStore{db: db}
+
+    _, err = db.Exec(`
+        CREATE TABLE tasks (
+            id TEXT PRIMARY KEY,
+            title TEXT,
+            description TEXT,
+            done INTEGER,
+            due TEXT
+        )`)
+    if err != nil {
+        t.Fatalf("failed to create table: %v", err)
+    }
+
+    taskID := uuid.New()
+    _, err = db.Exec(`
+        INSERT INTO tasks (id, title, description, done, due)
+        VALUES (?, ?, ?, ?, ?)`, taskID, "Test Task", "Test Description", 0, "2025-05-13")
+    if err != nil {
+        t.Fatalf("failed to insert task: %v", err)
+    }
+
+    err = store.SetTaskDone(taskID)
+    if err != nil {
+        t.Fatalf("failed to set task done: %v", err)
+    }
+
+    var done int
+    err = db.QueryRow(`SELECT done FROM tasks WHERE id = ?`, taskID).Scan(&done)
+    if err != nil {
+        t.Fatalf("failed to query task done status: %v", err)
+    }
+
+    if done != 1 {
+        t.Fatalf("expected task done to be 1, got %d", done)
+    }
 }
