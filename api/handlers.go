@@ -141,7 +141,7 @@ func (h *RealHandler) SubmitLogin(w http.ResponseWriter, r *http.Request) {
         Value:    sessionToken.String(),
         Path:     "/",
         HttpOnly: true,
-        Secure:   false, // todo: Set to true (https) in production.
+        Secure:   false, // TODO: Set to true (https) in production.
         Expires:  expiresAt,
     })
 

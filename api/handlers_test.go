@@ -4,12 +4,15 @@ import (
 	"html/template"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"golang.org/x/crypto/bcrypt"
 
 	"penumbra/app"
 )
@@ -145,4 +148,66 @@ func TestHandleHomeValidCookie(t *testing.T) {
 	if location := rr.Header().Get("Location"); location != "/dashboard" {
 		t.Fatalf("Expected redirect to /dashboard but got %s", location)
 	}
+}
+
+func TestSubmitLogin(t *testing.T) {
+	password := "password123"
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		t.Fatalf("Failed to generate password hash: %v", err)
+	}
+	
+	t.Logf("Generated password hash: %s", string(passwordHash))
+	
+	err = bcrypt.CompareHashAndPassword(passwordHash, []byte(password))
+	if err != nil {
+		t.Fatalf("Generated hash fails verification: %v", err)
+	}
+	
+	mockStore := new(MockSQLiteStore)
+	handler := &RealHandler{
+		store: mockStore,
+	}
+	
+	mockUser := app.User{
+		Id:           1,
+		Email:        "test@example.com",
+		PasswordHash: passwordHash,
+	}
+	
+	mockStore.On("GetUserByEmail", "test@example.com").Return(mockUser, nil).Once()
+	
+	mockSessionToken := uuid.New()
+	mockStore.On("AddSessionToken", mockUser.Id).Return(mockSessionToken, time.Now().Add(time.Hour), nil).Once()
+	
+	form := url.Values{}
+	form.Add("email", "test@example.com")
+	form.Add("password", password)
+	
+	req := httptest.NewRequest("POST", "/login", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	
+	rr := httptest.NewRecorder()
+	handler.SubmitLogin(rr, req)
+	
+	t.Logf("Response status code: %d", rr.Code)
+	t.Logf("Response headers: %v", rr.Header())
+	
+	assert.Equal(t, http.StatusSeeOther, rr.Code)
+	
+	redirectLocation := rr.Header().Get("Location")
+	t.Logf("Redirected to: %s", redirectLocation)
+	assert.Equal(t, "/dashboard", redirectLocation)
+	
+	cookies := rr.Result().Cookies()
+	assert.Len(t, cookies, 1, "Expected exactly one cookie")
+	
+	if len(cookies) > 0 {
+		cookie := cookies[0]
+		t.Logf("Cookie: Name=%s, Value=%s, Path=%s", cookie.Name, cookie.Value, cookie.Path)
+		assert.Equal(t, "session_token", cookie.Name)
+		assert.Equal(t, mockSessionToken.String(), cookie.Value)
+	}
+	
+	mockStore.AssertExpectations(t)
 }

@@ -9,7 +9,7 @@ A task-manager app written in Go as a learning exercise.
 
 ## Project status
 
-This project should be considered inclomplete if any `todo` remains in the actual code. Any CI/Cd pipeline should enforce that.
+This project should be considered inclomplete if any `TODO` remains in the actual code. Any CI/Cd pipeline should enforce that.
 
 ## Usage
 
