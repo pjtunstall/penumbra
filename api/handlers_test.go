@@ -4,12 +4,14 @@ import (
 	"html/template"
 	"net/http"
 	"net/http/httptest"
-	"penumbra/app"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
+
+	"penumbra/app"
 )
 
 type MockSQLiteStore struct {
@@ -26,12 +28,12 @@ func (m *MockSQLiteStore) GetUserByEmail(email string) (app.User, error) {
     return args.Get(0).(app.User), args.Error(1)
 }
 
-func (m *MockSQLiteStore) AddSessionToken(user_id int) (string, time.Time, error) {
+func (m *MockSQLiteStore) AddSessionToken(user_id int) (uuid.UUID, time.Time, error) {
     args := m.Called(user_id)
-    return args.String(0), args.Get(1).(time.Time), args.Error(2)
+    return args.Get(0).(uuid.UUID), args.Get(1).(time.Time), args.Error(2)
 }
 
-func (m *MockSQLiteStore) GetUserIdFromSessionToken(sessionToken string) (int, error) {
+func (m *MockSQLiteStore) GetUserIdFromSessionToken(sessionToken uuid.UUID) (int, error) {
     args := m.Called(sessionToken)
     return args.Int(0), args.Error(1)
 }
@@ -51,7 +53,7 @@ func (m *MockSQLiteStore) SubmitCreateTask(task app.Task) (int, error) {
     return args.Int(0), args.Error(1)
 }
 
-func (m *MockSQLiteStore) GetTaskById(id int) (app.Task, error) {
+func (m *MockSQLiteStore) GetTaskById(id uuid.UUID) (app.Task, error) {
     args := m.Called(id)
     return args.Get(0).(app.Task), args.Error(1)
 }
@@ -61,7 +63,12 @@ func (m *MockSQLiteStore) MarkTaskDone(id int) error {
     return args.Error(0)
 }
 
-func (m *MockSQLiteStore) DeleteTask(id int) error {
+func (m *MockSQLiteStore) CreateTask(task app.Task) error {
+    args := m.Called(task)
+    return args.Error(0)
+}
+
+func (m *MockSQLiteStore) DeleteTask(id uuid.UUID) error {
     args := m.Called(id)
     return args.Error(0)
 }
@@ -71,7 +78,7 @@ func (m *MockSQLiteStore) UpdateTask(task app.Task) error {
     return args.Error(0)
 }
 
-func (m *MockSQLiteStore) SetTaskDone(id int) error {
+func (m *MockSQLiteStore) SetTaskDone(id uuid.UUID) error {
     args := m.Called()
     return args.Error(1)
 }
@@ -111,4 +118,31 @@ func TestHandleHomeMissingCookie(t *testing.T) {
     if location != "/login" {
         t.Errorf("Expected redirect to /login, got %v", location)
     }
+}
+
+func TestHandleHomeWithValidCookie(t *testing.T) {
+	mockStore := &MockSQLiteStore{}
+	handler := &RealHandler{store: mockStore}
+
+	req, err := http.NewRequest("GET", "/home", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	cookie := &http.Cookie{Name: "session_token", Value: uuid.New().String()}
+	req.AddCookie(cookie)
+
+    mockStore.On("GetUserIdFromSessionToken", mock.AnythingOfType("uuid.UUID")).Return(1, nil).Once()
+
+	rr := httptest.NewRecorder()
+
+	handler.HandleHome(rr, req)
+
+	if rr.Code != http.StatusSeeOther {
+		t.Fatalf("Expected status %d but got %d", http.StatusSeeOther, rr.Code)
+	}
+
+	if location := rr.Header().Get("Location"); location != "/dashboard" {
+		t.Fatalf("Expected redirect to /dashboard but got %s", location)
+	}
 }
