@@ -120,7 +120,7 @@ func TestHandleHomeMissingCookie(t *testing.T) {
     }
 }
 
-func TestHandleHomeWithValidCookie(t *testing.T) {
+func TestHandleHomeValidCookie(t *testing.T) {
 	mockStore := &MockSQLiteStore{}
 	handler := &RealHandler{store: mockStore}
 
