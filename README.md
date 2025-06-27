@@ -2,6 +2,8 @@
 
 - [Overview](#overview)
 - [Project status](#project-status)
+- [Usage](#usage)
+- [Routes](#routes)
 
 ## Overview
 
@@ -21,7 +23,7 @@ Then to build and run the app in one step, run `go run cmd/webapp/main.go` (assu
 
 To run all tests, run `go test ./...`.
 
-### Routes
+## Routes
 
 - `GET  /` – redirect to `/login` if not logged in, otherwise redirect to `/dashboard`
 - `GET  /login` – show login form
